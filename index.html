@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Life OS</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0f14;
+  --bg2: #13161d;
+  --bg3: #1a1e28;
+  --bg4: #212638;
+  --border: #2a2f42;
+  --border2: #3a4060;
+  --text: #e8ecf4;
+  --text2: #8f96b0;
+  --text3: #5a6180;
+  --accent: #4f8ef7;
+  --accent2: #7b5af7;
+  --green: #3ecf6c;
+  --yellow: #f7c94f;
+  --red: #f75f5f;
+  --orange: #f7904f;
+  --cyan: #4fcff7;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --sidebar-w: 220px;
+  --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%; width: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
+  font-size: 14px;
+  overflow: hidden;
+}
+
+/* ─── LAYOUT ─── */
+#app { display: flex; height: 100vh; width: 100vw; }
+
+/* ─── SIDEBAR ─── */
+#sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  position: relative;
+  z-index: 10;
+}
+
+.sidebar-logo {
+  padding: 20px 18px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.logo-icon {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700;
+  font-family: 'Space Mono', monospace;
+  color: white; flex-shrink: 0;
+}
+.logo-text { font-size: 15px; font-weight: 700; letter-spacing: 0.5px; color: var(--text); }
+.logo-sub { font-size: 10px; color: var(--text3); font-family: 'Space Mono', monospace; letter-spacing: 1px; }
+
+.sidebar-section { padding: 12px 10px 4px; }
+.sidebar-section-label { font-size: 10px; color: var(--text3); font-family: 'Space Mono', monospace; letter-spacing: 1.5px; text-transform: uppercase; padding: 0 8px; margin-bottom: 4px; }
+
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 10px; border-radius: var(--radius-sm);
+  cursor: pointer; color: var(--text2);
+  font-size: 13.5px; font-weight: 500;
+  transition: all var(--transition);
+  margin-bottom: 1px; position: relative;
+}
+.nav-item:hover { background: var(--bg3); color: var(--text); }
+.nav-item.active { background: rgba(79,142,247,0.12); color: var(--accent); }
+.nav-item.active::before {
+  content: '';
+  position: absolute; left: 0; top: 4px; bottom: 4px;
+  width: 3px; background: var(--accent);
+  border-radius: 0 3px 3px 0;
+}
+.nav-icon { font-size: 16px; width: 22px; text-align: center; }
+
+.sidebar-bottom {
+  margin-top: auto;
+  padding: 12px;
+  border-top: 1px solid var(--border);
+}
+.pomodoro-widget {
+  background: var(--bg3); border-radius: var(--radius-sm);
+  padding: 12px; border: 1px solid var(--border);
+}
+.pom-label { font-size: 10px; color: var(--text3); font-family: 'Space Mono', monospace; letter-spacing: 1px; margin-bottom: 6px; }
+.pom-time {
+  font-family: 'Space Mono', monospace;
+  font-size: 28px; font-weight: 700;
+  color: var(--text); text-align: center; letter-spacing: 2px;
+  line-height: 1;
+}
+.pom-time.running { color: var(--green); }
+.pom-time.break { color: var(--cyan); }
+.pom-controls { display: flex; gap: 6px; margin-top: 8px; }
+.pom-btn {
+  flex: 1; padding: 6px; border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg4); color: var(--text2);
+  cursor: pointer; font-size: 11px; font-weight: 600;
+  transition: all var(--transition);
+  font-family: 'Space Mono', monospace;
+}
+.pom-btn:hover { border-color: var(--accent); color: var(--accent); }
+.pom-btn.start { background: rgba(62,207,108,0.1); border-color: var(--green); color: var(--green); }
+.pom-session { text-align: center; font-size: 10px; color: var(--text3); margin-top: 5px; font-family: 'Space Mono', monospace; }
+
+/* ─── MAIN ─── */
+#main {
+  flex: 1; display: flex; flex-direction: column;
+  overflow: hidden; background: var(--bg);
+}
+
+/* ─── TOPBAR ─── */
+#topbar {
+  height: 52px; display: flex; align-items: center;
+  padding: 0 20px; gap: 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2); flex-shrink: 0;
+}
+.page-title { font-size: 16px; font-weight: 700; color: var(--text); white-space: nowrap; }
+.search-wrap { flex: 1; max-width: 400px; position: relative; }
+.search-input {
+  width: 100%; padding: 7px 12px 7px 34px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text);
+  font-size: 13px; outline: none; font-family: inherit;
+  transition: all var(--transition);
+}
+.search-input:focus { border-color: var(--accent); background: var(--bg4); }
+.search-input::placeholder { color: var(--text3); }
+.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 14px; }
+.topbar-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.today-badge {
+  font-size: 11px; font-family: 'Space Mono', monospace;
+  color: var(--text3); background: var(--bg3);
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 4px 8px;
+}
+
+/* ─── CONTENT ─── */
+#content { flex: 1; overflow-y: auto; padding: 24px; }
+#content::-webkit-scrollbar { width: 4px; }
+#content::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+.page { display: none; animation: fadeIn 0.2s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ─── COMPONENTS ─── */
+.card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px;
+}
+.card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.card-title .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+.section-title { font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text3); font-family: 'Space Mono', monospace; margin-bottom: 14px; }
+
+/* ─── DASHBOARD ─── */
+.stat-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px 18px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.stat-label { font-size: 11px; color: var(--text3); font-family: 'Space Mono', monospace; letter-spacing: 0.8px; }
+.stat-value { font-size: 28px; font-weight: 700; color: var(--text); font-family: 'Space Mono', monospace; line-height: 1; }
+.stat-sub { font-size: 11px; color: var(--text3); }
+
+.today-schedule { display: flex; flex-direction: column; gap: 6px; }
+.sched-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: 8px;
+  background: var(--bg3); border: 1px solid var(--border);
+  transition: all var(--transition);
+}
+.sched-item:hover { border-color: var(--border2); }
+.sched-time { font-size: 11px; font-family: 'Space Mono', monospace; color: var(--text3); width: 80px; flex-shrink: 0; }
+.sched-label { font-size: 13px; color: var(--text); flex: 1; }
+.sched-tag { font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 600; }
+
+/* ─── KANBAN ─── */
+.kanban-board { display: flex; gap: 14px; min-height: 400px; overflow-x: auto; padding-bottom: 4px; }
+.kanban-col {
+  min-width: 220px; flex: 1;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); display: flex; flex-direction: column;
+}
+.kanban-col-header {
+  padding: 12px 14px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.col-name { font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 7px; }
+.col-dot { width: 8px; height: 8px; border-radius: 50%; }
+.col-count { font-size: 11px; color: var(--text3); background: var(--bg3); border-radius: 20px; padding: 1px 7px; font-family: 'Space Mono', monospace; }
+.kanban-cards { padding: 10px; display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 120px; }
+.kanban-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 12px;
+  cursor: grab; transition: all var(--transition);
+}
+.kanban-card:hover { border-color: var(--border2); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+.kanban-card.dragging { opacity: 0.4; cursor: grabbing; }
+.kc-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+.kc-meta { display: flex; align-items: center; justify-content: space-between; }
+.kc-tag { font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 600; }
+.kc-date { font-size: 10px; color: var(--text3); font-family: 'Space Mono', monospace; }
+.kc-progress { margin-top: 8px; }
+.progress-bar { height: 3px; background: var(--bg4); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 3px; transition: width 0.4s; }
+.kc-prog-label { font-size: 10px; color: var(--text3); margin-top: 3px; font-family: 'Space Mono', monospace; }
+.add-card-btn {
+  margin: 0 10px 10px; padding: 7px;
+  border: 1px dashed var(--border); border-radius: 8px;
+  background: none; color: var(--text3);
+  cursor: pointer; font-size: 12px; font-family: inherit;
+  transition: all var(--transition); text-align: center;
+}
+.add-card-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(79,142,247,0.05); }
+
+/* Priority Matrix */
+.matrix { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 8px; height: 260px; }
+.matrix-cell {
+  border-radius: var(--radius-sm); padding: 10px;
+  border: 1px solid var(--border); display: flex; flex-direction: column;
+}
+.matrix-cell-title { font-size: 10px; font-weight: 700; letter-spacing: 0.8px; margin-bottom: 6px; font-family: 'Space Mono', monospace; }
+.matrix-items { display: flex; flex-direction: column; gap: 4px; flex: 1; overflow-y: auto; }
+.matrix-item { font-size: 11px; color: var(--text2); padding: 3px 6px; background: rgba(255,255,255,0.04); border-radius: 4px; cursor: pointer; }
+
+/* ─── WORKFLOW ─── */
+.flow-canvas {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); min-height: 400px;
+  position: relative; overflow: hidden;
+}
+.flow-toolbar {
+  display: flex; gap: 8px; padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg3);
+}
+.flow-btn {
+  padding: 5px 12px; border-radius: 6px; font-size: 12px;
+  border: 1px solid var(--border); background: var(--bg2);
+  color: var(--text2); cursor: pointer; font-family: inherit;
+  transition: all var(--transition);
+}
+.flow-btn:hover { border-color: var(--border2); color: var(--text); }
+.flow-btn.active { background: rgba(79,142,247,0.15); border-color: var(--accent); color: var(--accent); }
+.flow-area { padding: 20px; min-height: 360px; position: relative; }
+.flow-node {
+  position: absolute;
+  background: var(--bg3); border: 2px solid var(--border);
+  border-radius: 10px; padding: 10px 14px; min-width: 120px;
+  cursor: move; user-select: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.flow-node:hover, .flow-node.selected { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(79,142,247,0.2); }
+.flow-node .node-icon { font-size: 20px; }
+.flow-node .node-label { font-size: 12px; font-weight: 600; color: var(--text); text-align: center; }
+.flow-node .node-sub { font-size: 10px; color: var(--text3); text-align: center; }
+.flow-node.start { border-color: var(--green); }
+.flow-node.end { border-color: var(--red); }
+.flow-node.decision { border-color: var(--yellow); clip-path: polygon(50% 0%,100% 50%,50% 100%,0% 50%); padding: 20px; min-width: 130px; }
+svg.flow-arrows { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+
+.logic-area { margin-top: 16px; }
+.logic-row {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 12px;
+}
+.logic-if { font-size: 11px; font-weight: 700; color: var(--accent); font-family: 'Space Mono', monospace; width: 24px; }
+.logic-input {
+  flex: 1; background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 5px 8px; color: var(--text);
+  font-size: 12px; outline: none; font-family: inherit;
+}
+.logic-then { font-size: 11px; color: var(--text3); font-family: 'Space Mono', monospace; }
+.logic-del { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 14px; padding: 2px 4px; }
+.logic-del:hover { color: var(--red); }
+
+/* ─── SCHEDULE ─── */
+.week-grid { display: grid; grid-template-columns: 60px repeat(7, 1fr); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--bg2); }
+.week-header { display: contents; }
+.week-header-cell { background: var(--bg3); border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); padding: 8px 4px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text2); font-family: 'Space Mono', monospace; }
+.week-header-cell.today { color: var(--accent); }
+.time-slot { display: contents; }
+.time-label { font-size: 10px; color: var(--text3); font-family: 'Space Mono', monospace; padding: 4px 6px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); text-align: right; line-height: 28px; height: 28px; }
+.week-cell { border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); height: 28px; position: relative; cursor: pointer; transition: background var(--transition); }
+.week-cell:hover { background: rgba(79,142,247,0.05); }
+.week-event {
+  position: absolute; left: 2px; right: 2px; top: 2px; bottom: 2px;
+  border-radius: 4px; padding: 1px 4px; font-size: 10px; font-weight: 600;
+  overflow: hidden; white-space: nowrap; text-overflow: ellipsis; cursor: pointer; z-index: 2;
+}
+
+/* Habit Tracker */
+.habit-list { display: flex; flex-direction: column; gap: 8px; }
+.habit-row { display: flex; align-items: center; gap: 10px; }
+.habit-name { font-size: 13px; color: var(--text); flex: 1; }
+.habit-checks { display: flex; gap: 4px; }
+.habit-check {
+  width: 22px; height: 22px; border-radius: 5px;
+  border: 1px solid var(--border); background: var(--bg3);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 11px; transition: all var(--transition);
+  font-family: 'Space Mono', monospace; color: var(--text3);
+}
+.habit-check.done { background: rgba(62,207,108,0.15); border-color: var(--green); color: var(--green); }
+
+/* ─── NOTES ─── */
+.notes-layout { display: grid; grid-template-columns: 220px 1fr; gap: 16px; }
+.notes-list { display: flex; flex-direction: column; gap: 6px; }
+.note-item {
+  padding: 10px 12px; border-radius: 8px;
+  background: var(--bg2); border: 1px solid var(--border);
+  cursor: pointer; transition: all var(--transition);
+}
+.note-item:hover, .note-item.active { border-color: var(--accent); background: rgba(79,142,247,0.06); }
+.note-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.note-preview { font-size: 11px; color: var(--text3); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.note-tags { display: flex; gap: 4px; margin-top: 5px; flex-wrap: wrap; }
+.note-tag { font-size: 10px; padding: 1px 6px; border-radius: 20px; background: rgba(79,142,247,0.12); color: var(--accent); }
+.note-editor {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); display: flex; flex-direction: column;
+}
+.editor-toolbar {
+  display: flex; gap: 4px; padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg3);
+}
+.tb-btn {
+  padding: 4px 8px; border-radius: 5px; border: none;
+  background: none; color: var(--text2); cursor: pointer;
+  font-size: 13px; font-weight: 700; transition: all var(--transition);
+  font-family: 'Space Mono', monospace;
+}
+.tb-btn:hover { background: var(--bg4); color: var(--text); }
+.editor-title {
+  width: 100%; background: none; border: none; outline: none;
+  color: var(--text); font-size: 20px; font-weight: 700;
+  padding: 16px 18px 8px; font-family: inherit;
+}
+.editor-body {
+  width: 100%; background: none; border: none; outline: none;
+  color: var(--text2); font-size: 14px; padding: 0 18px 16px;
+  flex: 1; resize: none; min-height: 300px; line-height: 1.7;
+  font-family: inherit;
+}
+.editor-meta {
+  padding: 8px 18px; border-top: 1px solid var(--border);
+  display: flex; gap: 8px; align-items: center;
+}
+.tag-input {
+  background: none; border: none; outline: none;
+  color: var(--accent); font-size: 12px; font-family: inherit;
+  flex: 1;
+}
+
+/* ─── CALENDAR ─── */
+.cal-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+.cal-nav-btn {
+  padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border);
+  background: var(--bg2); color: var(--text2); cursor: pointer;
+  font-size: 14px; transition: all var(--transition);
+}
+.cal-nav-btn:hover { border-color: var(--border2); color: var(--text); }
+.cal-month-title { font-size: 18px; font-weight: 700; color: var(--text); flex: 1; }
+.cal-view-tabs { display: flex; gap: 2px; background: var(--bg3); border-radius: 8px; padding: 2px; border: 1px solid var(--border); }
+.cal-tab {
+  padding: 5px 12px; border-radius: 6px; font-size: 12px;
+  cursor: pointer; color: var(--text3); transition: all var(--transition);
+  font-weight: 600;
+}
+.cal-tab.active { background: var(--bg4); color: var(--text); }
+
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.cal-day-header { background: var(--bg3); padding: 8px 4px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text3); font-family: 'Space Mono', monospace; }
+.cal-cell {
+  background: var(--bg2); min-height: 80px; padding: 6px 8px;
+  cursor: pointer; transition: background var(--transition);
+  display: flex; flex-direction: column; gap: 3px;
+}
+.cal-cell:hover { background: var(--bg3); }
+.cal-cell.today { background: rgba(79,142,247,0.08); }
+.cal-day-num { font-size: 12px; font-weight: 700; font-family: 'Space Mono', monospace; }
+.cal-cell.today .cal-day-num { color: var(--accent); background: var(--accent); color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+.cal-cell.other-month .cal-day-num { color: var(--text3); }
+.cal-event { font-size: 10px; padding: 2px 5px; border-radius: 3px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+/* ─── FAB ─── */
+#fab {
+  position: fixed; right: 24px; bottom: 24px;
+  width: 48px; height: 48px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: none; cursor: pointer; font-size: 22px; color: white;
+  box-shadow: 0 4px 20px rgba(79,142,247,0.4);
+  transition: all var(--transition); z-index: 100;
+  display: flex; align-items: center; justify-content: center;
+}
+#fab:hover { transform: scale(1.1); box-shadow: 0 6px 28px rgba(79,142,247,0.5); }
+
+/* ─── MODAL ─── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  z-index: 200; display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity var(--transition);
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px; width: 400px;
+  transform: translateY(12px); transition: transform var(--transition);
+}
+.modal-overlay.open .modal { transform: translateY(0); }
+.modal-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--text); }
+.form-group { margin-bottom: 12px; }
+.form-label { font-size: 11px; color: var(--text3); font-family: 'Space Mono', monospace; letter-spacing: 0.8px; margin-bottom: 5px; display: block; }
+.form-input, .form-select, .form-textarea {
+  width: 100%; padding: 8px 11px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text); font-size: 13px; outline: none; font-family: inherit;
+  transition: all var(--transition);
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); background: var(--bg4); }
+.form-select option { background: var(--bg3); }
+.form-textarea { resize: vertical; min-height: 70px; }
+.modal-actions { display: flex; gap: 8px; margin-top: 16px; }
+.btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid transparent; font-family: inherit; transition: all var(--transition); }
+.btn-primary { background: var(--accent); color: white; border-color: var(--accent); }
+.btn-primary:hover { background: #3a7ef0; }
+.btn-ghost { background: none; color: var(--text2); border-color: var(--border); }
+.btn-ghost:hover { border-color: var(--border2); color: var(--text); }
+
+.empty-state { text-align: center; padding: 40px; color: var(--text3); }
+.empty-state .es-icon { font-size: 36px; margin-bottom: 10px; }
+.empty-state .es-text { font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">L</div>
+      <div>
+        <div class="logo-text">Life OS</div>
+        <div class="logo-sub">SYSTEM v1.0</div>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Main</div>
+      <div class="nav-item active" data-page="dashboard" onclick="navigate('dashboard',this)">
+        <span class="nav-icon">⬡</span> Dashboard
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Modules</div>
+      <div class="nav-item" data-page="framework" onclick="navigate('framework',this)">
+        <span class="nav-icon">◈</span> Framework
+      </div>
+      <div class="nav-item" data-page="workflow" onclick="navigate('workflow',this)">
+        <span class="nav-icon">⟶</span> Workflow
+      </div>
+      <div class="nav-item" data-page="schedule" onclick="navigate('schedule',this)">
+        <span class="nav-icon">⊞</span> Schedule
+      </div>
+      <div class="nav-item" data-page="notes" onclick="navigate('notes',this)">
+        <span class="nav-icon">◧</span> Notes
+      </div>
+      <div class="nav-item" data-page="calendar" onclick="navigate('calendar',this)">
+        <span class="nav-icon">◻</span> Calendar
+      </div>
+    </div>
+    <div class="sidebar-bottom">
+      <div class="pomodoro-widget">
+        <div class="pom-label">POMODORO</div>
+        <div class="pom-time" id="pom-display">25:00</div>
+        <div class="pom-controls">
+          <button class="pom-btn start" id="pom-start-btn" onclick="pomToggle()">▶ START</button>
+          <button class="pom-btn" onclick="pomReset()">↺</button>
+        </div>
+        <div class="pom-session" id="pom-session-label">Focus · Session 1</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="main">
+    <div id="topbar">
+      <div class="page-title" id="page-title">Dashboard</div>
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" placeholder="ค้นหาทุกอย่าง..." id="master-search" oninput="masterSearch(this.value)">
+      </div>
+      <div class="topbar-actions">
+        <div class="today-badge" id="today-badge"></div>
+      </div>
+    </div>
+    <div id="content">
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="grid4" style="margin-bottom:20px">
+          <div class="stat-card">
+            <div class="stat-label">TASKS TODAY</div>
+            <div class="stat-value" id="stat-tasks">0</div>
+            <div class="stat-sub">รายการทั้งหมด</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">DONE</div>
+            <div class="stat-value" id="stat-done" style="color:var(--green)">0</div>
+            <div class="stat-sub">เสร็จแล้ว</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">NOTES</div>
+            <div class="stat-value" id="stat-notes" style="color:var(--yellow)">0</div>
+            <div class="stat-sub">บันทึกทั้งหมด</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">STREAK</div>
+            <div class="stat-value" id="stat-streak" style="color:var(--orange)">0</div>
+            <div class="stat-sub">วันติดต่อกัน</div>
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="card">
+            <div class="card-title"><span class="dot" style="background:var(--accent)"></span>วันนี้</div>
+            <div id="today-schedule-list" class="today-schedule">
+              <div class="empty-state"><div class="es-icon">📅</div><div class="es-text">ยังไม่มีกิจกรรมวันนี้<br>เพิ่มใน Schedule</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="dot" style="background:var(--red)"></span>งานที่ยังค้างอยู่</div>
+            <div id="doing-tasks-list" style="display:flex;flex-direction:column;gap:6px">
+              <div class="empty-state"><div class="es-icon">✓</div><div class="es-text">ไม่มีงานค้าง</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FRAMEWORK -->
+      <div class="page" id="page-framework">
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap">
+          <div class="section-title" style="margin-bottom:0">KANBAN BOARD</div>
+          <button class="btn btn-primary" style="font-size:12px;padding:6px 12px" onclick="openModal('add-task')">+ เพิ่ม Task</button>
+        </div>
+        <div class="kanban-board" id="kanban-board"></div>
+
+        <div style="margin-top:24px">
+          <div class="section-title" style="margin-bottom:14px">PRIORITY MATRIX</div>
+          <div class="grid2">
+            <div class="matrix">
+              <div class="matrix-cell" style="background:rgba(247,95,95,0.07);border-color:rgba(247,95,95,0.3)">
+                <div class="matrix-cell-title" style="color:var(--red)">⚡ สำคัญ + เร่งด่วน</div>
+                <div class="matrix-items" id="matrix-q1"></div>
+              </div>
+              <div class="matrix-cell" style="background:rgba(79,142,247,0.07);border-color:rgba(79,142,247,0.3)">
+                <div class="matrix-cell-title" style="color:var(--accent)">🎯 สำคัญ + ไม่เร่งด่วน</div>
+                <div class="matrix-items" id="matrix-q2"></div>
+              </div>
+              <div class="matrix-cell" style="background:rgba(247,201,79,0.07);border-color:rgba(247,201,79,0.3)">
+                <div class="matrix-cell-title" style="color:var(--yellow)">🔔 ไม่สำคัญ + เร่งด่วน</div>
+                <div class="matrix-items" id="matrix-q3"></div>
+              </div>
+              <div class="matrix-cell" style="background:rgba(90,97,128,0.1);border-color:rgba(90,97,128,0.3)">
+                <div class="matrix-cell-title" style="color:var(--text3)">○ ไม่สำคัญ + ไม่เร่งด่วน</div>
+                <div class="matrix-items" id="matrix-q4"></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title"><span class="dot" style="background:var(--green)"></span>ความสำเร็จโปรเจกต์</div>
+              <div id="progress-list" style="display:flex;flex-direction:column;gap:10px">
+                <div class="empty-state"><div class="es-text">เพิ่ม Task เพื่อดู Progress</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WORKFLOW -->
+      <div class="page" id="page-workflow">
+        <div class="flow-canvas">
+          <div class="flow-toolbar">
+            <button class="flow-btn active" id="flow-mode-btn" onclick="toggleFlowMode(this)">✎ Edit</button>
+            <button class="flow-btn" onclick="addFlowNode('process')">＋ Process</button>
+            <button class="flow-btn" onclick="addFlowNode('decision')">◇ Decision</button>
+            <button class="flow-btn" onclick="addFlowNode('start')">● Start</button>
+            <button class="flow-btn" onclick="addFlowNode('end')">■ End</button>
+            <button class="flow-btn" onclick="clearFlow()" style="margin-left:auto;color:var(--red)">✕ Clear</button>
+          </div>
+          <div class="flow-area" id="flow-area">
+            <svg class="flow-arrows" id="flow-svg"></svg>
+          </div>
+        </div>
+
+        <div style="margin-top:20px">
+          <div class="card">
+            <div class="card-title"><span class="dot" style="background:var(--yellow)"></span>Automation Logic (ถ้า... ให้ทำ...)</div>
+            <div id="logic-rows" class="logic-area"></div>
+            <button class="flow-btn" onclick="addLogicRow()" style="margin-top:8px">+ เพิ่มเงื่อนไข</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCHEDULE -->
+      <div class="page" id="page-schedule">
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap">
+          <div class="section-title" style="margin-bottom:0">WEEKLY SCHEDULE</div>
+          <button class="btn btn-primary" style="font-size:12px;padding:6px 12px" onclick="openModal('add-sched')">+ เพิ่มกิจกรรม</button>
+        </div>
+        <div id="week-grid-wrap" style="overflow-x:auto;margin-bottom:24px"></div>
+
+        <div class="grid2">
+          <div class="card">
+            <div class="card-title"><span class="dot" style="background:var(--green)"></span>Habit Tracker (สัปดาห์นี้)</div>
+            <div id="habit-list" class="habit-list"></div>
+            <button class="flow-btn" onclick="openModal('add-habit')" style="margin-top:10px">+ เพิ่ม Habit</button>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="dot" style="background:var(--cyan)"></span>สถิติสัปดาห์</div>
+            <div id="habit-stats" style="display:flex;flex-direction:column;gap:8px;margin-top:4px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NOTES -->
+      <div class="page" id="page-notes">
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px">
+          <div class="section-title" style="margin-bottom:0">KNOWLEDGE BASE</div>
+          <button class="btn btn-primary" style="font-size:12px;padding:6px 12px" onclick="newNote()">+ บันทึกใหม่</button>
+        </div>
+        <div class="notes-layout">
+          <div>
+            <div id="notes-list" class="notes-list"></div>
+          </div>
+          <div class="note-editor" id="note-editor">
+            <div class="editor-toolbar">
+              <button class="tb-btn" onclick="fmt('bold')"><b>B</b></button>
+              <button class="tb-btn" onclick="fmt('italic')"><i>I</i></button>
+              <button class="tb-btn" onclick="fmt('h2')">H</button>
+              <button class="tb-btn" onclick="fmt('ul')">≡</button>
+            </div>
+            <input type="text" class="editor-title" id="note-title" placeholder="หัวข้อบันทึก..." oninput="saveCurrentNote()">
+            <textarea class="editor-body" id="note-body" placeholder="เริ่มเขียน..." oninput="saveCurrentNote()"></textarea>
+            <div class="editor-meta">
+              <span style="color:var(--text3);font-size:12px">#</span>
+              <input type="text" class="tag-input" id="note-tag-input" placeholder="เพิ่ม tag... กด Enter" onkeydown="addTag(event)">
+              <div id="note-tags-display" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CALENDAR -->
+      <div class="page" id="page-calendar">
+        <div class="cal-header">
+          <button class="cal-nav-btn" onclick="calNav(-1)">‹</button>
+          <div class="cal-month-title" id="cal-month-title"></div>
+          <button class="cal-nav-btn" onclick="calNav(1)">›</button>
+          <div class="cal-view-tabs">
+            <div class="cal-tab active" onclick="setCalView('month',this)">Month</div>
+            <div class="cal-tab" onclick="setCalView('week',this)">Week</div>
+          </div>
+          <button class="btn btn-primary" style="font-size:12px;padding:6px 12px" onclick="openModal('add-event')">+ เพิ่ม Event</button>
+        </div>
+        <div id="cal-grid-wrap"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAB -->
+<button id="fab" onclick="quickAdd()" title="เพิ่ม Task/Note">＋</button>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<script>
+// ──────────────────────────────────────────
+// DATA STORE
+// ──────────────────────────────────────────
+let state = {
+  tasks: [],
+  schedItems: [],
+  habits: [],
+  notes: [],
+  events: [],
+  logicRows: [],
+  flowNodes: [],
+  habitChecks: {},
+};
+
+const COLORS = { accent:'#4f8ef7', green:'#3ecf6c', yellow:'#f7c94f', red:'#f75f5f', orange:'#f7904f', cyan:'#4fcff7', purple:'#7b5af7' };
+const COL_COLORS = { backlog:'#5a6180', todo:'#4f8ef7', doing:'#f7c94f', done:'#3ecf6c' };
+const PRIORITY_COLORS = { high:'var(--red)', medium:'var(--yellow)', low:'var(--accent)' };
+
+function save() { try { localStorage.setItem('life-os-state', JSON.stringify(state)); } catch(e){} }
+function load() {
+  try {
+    const d = localStorage.getItem('life-os-state');
+    if (d) state = { ...state, ...JSON.parse(d) };
+  } catch(e){}
+}
+
+// ──────────────────────────────────────────
+// NAVIGATION
+// ──────────────────────────────────────────
+const PAGE_TITLES = { dashboard:'Dashboard', framework:'Framework & Goals', workflow:'Workflow Builder', schedule:'Schedule & Timetable', notes:'Notes', calendar:'Calendar' };
+
+function navigate(page, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  el.classList.add('active');
+  document.getElementById('page-title').textContent = PAGE_TITLES[page];
+  renderPage(page);
+}
+
+function renderPage(page) {
+  if (page === 'dashboard') renderDashboard();
+  if (page === 'framework') renderFramework();
+  if (page === 'workflow') renderWorkflow();
+  if (page === 'schedule') renderSchedule();
+  if (page === 'notes') renderNotes();
+  if (page === 'calendar') renderCalendar();
+}
+
+// ──────────────────────────────────────────
+// DATE / UTILS
+// ──────────────────────────────────────────
+const TH_DAYS = ['อา','จ','อ','พ','พฤ','ศ','ส'];
+const TH_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const TH_MONTHS_SHORT = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+
+function today() { return new Date(); }
+function todayStr() { const d = today(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function fmtDate(d) { const dt = new Date(d); return `${dt.getDate()} ${TH_MONTHS_SHORT[dt.getMonth()]}`; }
+
+function uid() { return Math.random().toString(36).slice(2,9); }
+
+function initTodayBadge() {
+  const d = today();
+  document.getElementById('today-badge').textContent = `${TH_DAYS[d.getDay()]} ${d.getDate()} ${TH_MONTHS_SHORT[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+// ──────────────────────────────────────────
+// DASHBOARD
+// ──────────────────────────────────────────
+function renderDashboard() {
+  const todayS = todayStr();
+  const todayScheds = state.schedItems.filter(s => s.days && s.days.includes(today().getDay()));
+  const doingTasks = state.tasks.filter(t => t.status === 'doing');
+
+  document.getElementById('stat-tasks').textContent = state.tasks.length;
+  document.getElementById('stat-done').textContent = state.tasks.filter(t => t.status === 'done').length;
+  document.getElementById('stat-notes').textContent = state.notes.length;
+
+  // Streak calc
+  let streak = 0;
+  const checkDay = (d) => {
+    const dk = d.toISOString().split('T')[0];
+    return state.habits.length > 0 && state.habits.every(h => state.habitChecks[h.id + '_' + dk + '_0']);
+  };
+  if (state.habits.length > 0) {
+    let d = new Date(); d.setDate(d.getDate() - 1);
+    while (checkDay(d)) { streak++; d.setDate(d.getDate() - 1); if (streak > 365) break; }
+    if (checkDay(new Date())) streak++;
+  }
+  document.getElementById('stat-streak').textContent = streak;
+
+  // Today schedule
+  const sl = document.getElementById('today-schedule-list');
+  if (todayScheds.length === 0) {
+    sl.innerHTML = '<div class="empty-state"><div class="es-icon">📅</div><div class="es-text">ยังไม่มีกิจกรรมวันนี้<br>เพิ่มใน Schedule</div></div>';
+  } else {
+    sl.innerHTML = todayScheds.map(s => `
+      <div class="sched-item">
+        <div class="sched-time">${s.startTime} – ${s.endTime}</div>
+        <div class="sched-label">${s.title}</div>
+        <span class="sched-tag" style="background:${s.color}22;color:${s.color}">${s.category}</span>
+      </div>
+    `).join('');
+  }
+
+  // Doing tasks
+  const dl = document.getElementById('doing-tasks-list');
+  if (doingTasks.length === 0) {
+    dl.innerHTML = '<div class="empty-state"><div class="es-icon">✓</div><div class="es-text">ไม่มีงานค้าง</div></div>';
+  } else {
+    dl.innerHTML = doingTasks.map(t => `
+      <div class="sched-item">
+        <div class="sched-label">${t.title}</div>
+        ${t.deadline ? `<span class="sched-tag" style="background:rgba(247,95,95,0.12);color:var(--red)">${fmtDate(t.deadline)}</span>` : ''}
+      </div>
+    `).join('');
+  }
+}
+
+// ──────────────────────────────────────────
+// FRAMEWORK (KANBAN)
+// ──────────────────────────────────────────
+const COLS = [
+  { id: 'backlog', name: 'Backlog', color: COL_COLORS.backlog },
+  { id: 'todo', name: 'To-Do', color: COL_COLORS.todo },
+  { id: 'doing', name: 'Doing', color: COL_COLORS.doing },
+  { id: 'done', name: 'Done', color: COL_COLORS.done },
+];
+
+function renderFramework() {
+  renderKanban();
+  renderMatrix();
+  renderProgress();
+}
+
+function renderKanban() {
+  const board = document.getElementById('kanban-board');
+  board.innerHTML = '';
+  COLS.forEach(col => {
+    const tasks = state.tasks.filter(t => t.status === col.id);
+    const div = document.createElement('div');
+    div.className = 'kanban-col';
+    div.dataset.col = col.id;
+    div.innerHTML = `
+      <div class="kanban-col-header">
+        <div class="col-name"><span class="col-dot" style="background:${col.color}"></span>${col.name}</div>
+        <span class="col-count">${tasks.length}</span>
+      </div>
+      <div class="kanban-cards" id="col-${col.id}" ondragover="event.preventDefault()" ondrop="dropTask(event,'${col.id}')">
+        ${tasks.map(t => kanbanCard(t)).join('')}
+      </div>
+      <button class="add-card-btn" onclick="openAddTask('${col.id}')">+ เพิ่ม task</button>
+    `;
+    board.appendChild(div);
+  });
+}
+
+function kanbanCard(t) {
+  const pct = t.progress || 0;
+  return `
+    <div class="kanban-card" draggable="true" id="card-${t.id}"
+      ondragstart="dragTask(event,'${t.id}')"
+      ondragend="this.classList.remove('dragging')">
+      <div class="kc-title">${t.title}</div>
+      <div class="kc-meta">
+        <span class="kc-tag" style="background:${t.priority==='high'?'rgba(247,95,95,0.15)':t.priority==='medium'?'rgba(247,201,79,0.15)':'rgba(79,142,247,0.15)'};color:${t.priority==='high'?'var(--red)':t.priority==='medium'?'var(--yellow)':'var(--accent)'}">
+          ${t.priority==='high'?'⚡ สูง':t.priority==='medium'?'○ กลาง':'· ต่ำ'}
+        </span>
+        ${t.deadline ? `<span class="kc-date">${fmtDate(t.deadline)}</span>` : ''}
+      </div>
+      ${pct > 0 ? `
+        <div class="kc-progress">
+          <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${COLS.find(c=>c.id===t.status)?.color||'var(--accent)'}"></div></div>
+          <div class="kc-prog-label">${pct}%</div>
+        </div>` : ''}
+      <div style="display:flex;gap:6px;margin-top:6px">
+        <button onclick="editProgress('${t.id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:0" title="แก้ไข progress">✎</button>
+        <button onclick="deleteTask('${t.id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:0" title="ลบ">✕</button>
+      </div>
+    </div>
+  `;
+}
+
+let dragId = null;
+function dragTask(e, id) { dragId = id; e.target.classList.add('dragging'); }
+function dropTask(e, col) {
+  e.preventDefault();
+  if (!dragId) return;
+  const t = state.tasks.find(t => t.id === dragId);
+  if (t) { t.status = col; save(); renderFramework(); renderDashboard(); }
+  dragId = null;
+}
+
+function deleteTask(id) {
+  state.tasks = state.tasks.filter(t => t.id !== id);
+  save(); renderFramework(); renderDashboard();
+}
+
+function editProgress(id) {
+  const t = state.tasks.find(t => t.id === id);
+  if (!t) return;
+  const val = prompt('ระบุ % ความสำเร็จ (0-100):', t.progress || 0);
+  if (val !== null) { t.progress = Math.min(100, Math.max(0, parseInt(val) || 0)); save(); renderFramework(); }
+}
+
+function openAddTask(status) {
+  openModal('add-task', { defaultStatus: status });
+}
+
+function renderMatrix() {
+  const qs = ['q1','q2','q3','q4'];
+  qs.forEach(q => document.getElementById('matrix-' + q).innerHTML = '');
+  state.tasks.filter(t => t.status !== 'done').forEach(t => {
+    const qid = t.quadrant || 'q4';
+    const el = document.createElement('div');
+    el.className = 'matrix-item';
+    el.textContent = t.title;
+    el.title = t.title;
+    const container = document.getElementById('matrix-' + qid);
+    if (container) container.appendChild(el);
+  });
+  qs.forEach(q => {
+    const el = document.getElementById('matrix-' + q);
+    if (el && el.children.length === 0) el.innerHTML = '<div style="font-size:10px;color:var(--text3);padding:4px">ว่าง</div>';
+  });
+}
+
+function renderProgress() {
+  const pl = document.getElementById('progress-list');
+  const projects = [...new Set(state.tasks.filter(t => t.project).map(t => t.project))];
+  if (projects.length === 0) {
+    pl.innerHTML = '<div class="empty-state"><div class="es-text">เพิ่ม Task พร้อมระบุ Project</div></div>';
+    return;
+  }
+  pl.innerHTML = projects.map(proj => {
+    const all = state.tasks.filter(t => t.project === proj);
+    const done = all.filter(t => t.status === 'done').length;
+    const pct = Math.round((done / all.length) * 100);
+    return `
+      <div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:13px;color:var(--text)">${proj}</span>
+          <span style="font-size:11px;color:var(--text3);font-family:'Space Mono',monospace">${done}/${all.length}</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:var(--accent)"></div></div>
+        <div class="kc-prog-label">${pct}%</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ──────────────────────────────────────────
+// WORKFLOW
+// ──────────────────────────────────────────
+let flowEditing = true;
+let flowDragging = null, flowDragOffX = 0, flowDragOffY = 0;
+let nodeCounter = 0;
+
+function renderWorkflow() {
+  renderFlowNodes();
+  renderLogicRows();
+}
+
+function addFlowNode(type) {
+  const id = uid();
+  const node = { id, type, label: type === 'start' ? 'Start' : type === 'end' ? 'End' : type === 'decision' ? 'Decision?' : 'Process', x: 40 + (nodeCounter % 4) * 160, y: 30 + Math.floor(nodeCounter / 4) * 120 };
+  nodeCounter++;
+  state.flowNodes.push(node);
+  save(); renderFlowNodes();
+}
+
+function renderFlowNodes() {
+  const area = document.getElementById('flow-area');
+  // Keep SVG
+  const svg = document.getElementById('flow-svg');
+  area.innerHTML = '';
+  area.appendChild(svg);
+  state.flowNodes.forEach(node => {
+    const div = document.createElement('div');
+    div.className = `flow-node ${node.type}`;
+    div.id = 'fn-' + node.id;
+    div.style.left = node.x + 'px';
+    div.style.top = node.y + 'px';
+    div.innerHTML = `
+      <div class="node-icon">${node.type==='start'?'▶':node.type==='end'?'⏹':node.type==='decision'?'◇':'⬡'}</div>
+      <div class="node-label" contenteditable="true" onblur="updateNodeLabel('${node.id}',this.textContent)">${node.label}</div>
+      <button onclick="deleteFlowNode('${node.id}')" style="position:absolute;top:2px;right:4px;background:none;border:none;color:var(--text3);cursor:pointer;font-size:10px">✕</button>
+    `;
+    if (flowEditing) {
+      div.addEventListener('mousedown', e => {
+        if (e.target.contentEditable === 'true') return;
+        flowDragging = node.id;
+        const rect = div.getBoundingClientRect();
+        flowDragOffX = e.clientX - rect.left;
+        flowDragOffY = e.clientY - rect.top;
+        e.preventDefault();
+      });
+    }
+    area.appendChild(div);
+  });
+}
+
+document.addEventListener('mousemove', e => {
+  if (!flowDragging) return;
+  const area = document.getElementById('flow-area');
+  if (!area) return;
+  const rect = area.getBoundingClientRect();
+  const node = state.flowNodes.find(n => n.id === flowDragging);
+  if (node) {
+    node.x = Math.max(0, e.clientX - rect.left - flowDragOffX);
+    node.y = Math.max(0, e.clientY - rect.top - flowDragOffY);
+    const el = document.getElementById('fn-' + node.id);
+    if (el) { el.style.left = node.x + 'px'; el.style.top = node.y + 'px'; }
+  }
+});
+document.addEventListener('mouseup', () => { if (flowDragging) { save(); flowDragging = null; } });
+
+function updateNodeLabel(id, txt) {
+  const n = state.flowNodes.find(n => n.id === id);
+  if (n) { n.label = txt.trim() || n.label; save(); }
+}
+
+function deleteFlowNode(id) {
+  state.flowNodes = state.flowNodes.filter(n => n.id !== id);
+  save(); renderFlowNodes();
+}
+
+function clearFlow() {
+  if (confirm('ลบ Flow ทั้งหมด?')) { state.flowNodes = []; save(); renderFlowNodes(); }
+}
+
+function toggleFlowMode(btn) {
+  flowEditing = !flowEditing;
+  btn.textContent = flowEditing ? '✎ Edit' : '👁 View';
+  btn.classList.toggle('active', flowEditing);
+}
+
+function renderLogicRows() {
+  const cont = document.getElementById('logic-rows');
+  if (state.logicRows.length === 0) {
+    cont.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:8px 0">กด "+ เพิ่มเงื่อนไข" เพื่อเริ่ม...</div>';
+    return;
+  }
+  cont.innerHTML = state.logicRows.map((r, i) => `
+    <div class="logic-row">
+      <div class="logic-if">IF</div>
+      <input class="logic-input" value="${r.condition}" placeholder="เงื่อนไข..." oninput="updateLogicRow(${i},'condition',this.value)">
+      <div class="logic-then">→ THEN</div>
+      <input class="logic-input" value="${r.action}" placeholder="ให้ทำ..." oninput="updateLogicRow(${i},'action',this.value)">
+      <button class="logic-del" onclick="deleteLogicRow(${i})">✕</button>
+    </div>
+  `).join('');
+}
+
+function addLogicRow() { state.logicRows.push({ condition: '', action: '' }); save(); renderLogicRows(); }
+function updateLogicRow(i, k, v) { state.logicRows[i][k] = v; save(); }
+function deleteLogicRow(i) { state.logicRows.splice(i, 1); save(); renderLogicRows(); }
+
+// ──────────────────────────────────────────
+// SCHEDULE
+// ──────────────────────────────────────────
+const HOURS = Array.from({length: 16}, (_, i) => i + 6); // 6:00–21:00
+
+function renderSchedule() {
+  renderWeekGrid();
+  renderHabits();
+}
+
+function renderWeekGrid() {
+  const today = new Date();
+  const dow = today.getDay(); // 0=Sun
+  const weekStart = new Date(today); weekStart.setDate(today.getDate() - dow);
+
+  const wrap = document.getElementById('week-grid-wrap');
+  let html = '<div class="week-grid">';
+  html += '<div class="week-header-cell"></div>';
+  for (let d = 0; d < 7; d++) {
+    const dt = new Date(weekStart); dt.setDate(weekStart.getDate() + d);
+    const isToday = dt.toDateString() === today.toDateString();
+    html += `<div class="week-header-cell${isToday?' today':''}">
+      <div>${TH_DAYS[d]}</div>
+      <div style="font-size:14px;font-weight:700">${dt.getDate()}</div>
+    </div>`;
+  }
+  HOURS.forEach(h => {
+    html += `<div class="time-label">${h}:00</div>`;
+    for (let d = 0; d < 7; d++) {
+      const dt = new Date(weekStart); dt.setDate(weekStart.getDate() + d);
+      const slotEvents = state.schedItems.filter(s => {
+        if (!s.days || !s.days.includes(d)) return false;
+        const sh = parseInt(s.startTime?.split(':')[0] || 0);
+        return sh === h;
+      });
+      html += `<div class="week-cell" onclick="openModal('add-sched',{day:${d},hour:${h}})">
+        ${slotEvents.map(e => `<div class="week-event" style="background:${e.color}22;color:${e.color}" title="${e.title}">${e.title}</div>`).join('')}
+      </div>`;
+    }
+  });
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
+function renderHabits() {
+  const hl = document.getElementById('habit-list');
+  if (state.habits.length === 0) {
+    hl.innerHTML = '<div class="empty-state"><div class="es-text">ยังไม่มี Habit เพิ่มด้านล่าง</div></div>';
+    document.getElementById('habit-stats').innerHTML = '';
+    return;
+  }
+  const week = Array.from({length: 7}, (_, i) => {
+    const d = new Date(); d.setDate(d.getDate() - d.getDay() + i); return d;
+  });
+  hl.innerHTML = state.habits.map(h => {
+    const checks = week.map((d, di) => {
+      const key = `${h.id}_${d.toISOString().split('T')[0]}_${di}`;
+      const done = !!state.habitChecks[key];
+      return `<div class="habit-check ${done?'done':''}" onclick="toggleHabit('${h.id}','${d.toISOString().split('T')[0]}',${di})" title="${TH_DAYS[di]}">${done?'✓':TH_DAYS[di]}</div>`;
+    }).join('');
+    return `<div class="habit-row"><div class="habit-name">${h.name}</div><div class="habit-checks">${checks}</div><button onclick="deleteHabit('${h.id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px">✕</button></div>`;
+  }).join('');
+
+  // Stats
+  const sts = document.getElementById('habit-stats');
+  sts.innerHTML = state.habits.map(h => {
+    const done = week.filter((d, di) => state.habitChecks[`${h.id}_${d.toISOString().split('T')[0]}_${di}`]).length;
+    const pct = Math.round((done / 7) * 100);
+    return `
+      <div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:12px;color:var(--text)">${h.name}</span><span style="font-size:11px;color:var(--text3)">${done}/7</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:var(--green)"></div></div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleHabit(habitId, dateStr, di) {
+  const key = `${habitId}_${dateStr}_${di}`;
+  state.habitChecks[key] = !state.habitChecks[key];
+  save(); renderHabits(); renderDashboard();
+}
+
+function deleteHabit(id) {
+  state.habits = state.habits.filter(h => h.id !== id);
+  save(); renderHabits();
+}
+
+// ──────────────────────────────────────────
+// NOTES
+// ──────────────────────────────────────────
+let activeNoteId = null;
+
+function renderNotes() {
+  const nl = document.getElementById('notes-list');
+  if (state.notes.length === 0) {
+    nl.innerHTML = '<div class="empty-state"><div class="es-icon">📝</div><div class="es-text">ยังไม่มีบันทึก</div></div>';
+  } else {
+    nl.innerHTML = state.notes.map(n => `
+      <div class="note-item ${n.id === activeNoteId ? 'active' : ''}" onclick="openNote('${n.id}')">
+        <div class="note-title">${n.title || 'ไม่มีชื่อ'}</div>
+        <div class="note-preview">${n.body || 'ว่าง...'}</div>
+        ${n.tags?.length ? `<div class="note-tags">${n.tags.map(t=>`<span class="note-tag">#${t}</span>`).join('')}</div>` : ''}
+      </div>
+    `).join('');
+  }
+  if (activeNoteId) {
+    const n = state.notes.find(n => n.id === activeNoteId);
+    if (n) {
+      document.getElementById('note-title').value = n.title || '';
+      document.getElementById('note-body').value = n.body || '';
+      renderNoteTags(n.tags || []);
+    }
+  } else {
+    document.getElementById('note-title').value = '';
+    document.getElementById('note-body').value = '';
+    renderNoteTags([]);
+  }
+}
+
+function renderNoteTags(tags) {
+  document.getElementById('note-tags-display').innerHTML = tags.map(t => `<span class="note-tag">#${t}</span>`).join('');
+}
+
+function openNote(id) {
+  activeNoteId = id; renderNotes();
+}
+
+function newNote() {
+  const n = { id: uid(), title: '', body: '', tags: [], created: Date.now() };
+  state.notes.unshift(n);
+  activeNoteId = n.id;
+  save(); renderNotes();
+  setTimeout(() => document.getElementById('note-title').focus(), 50);
+}
+
+function saveCurrentNote() {
+  if (!activeNoteId) return;
+  const n = state.notes.find(n => n.id === activeNoteId);
+  if (!n) return;
+  n.title = document.getElementById('note-title').value;
+  n.body = document.getElementById('note-body').value;
+  save();
+  // Update list preview
+  document.querySelectorAll('.note-item').forEach((el, i) => {
+    const item = state.notes[i];
+    if (item) {
+      el.querySelector('.note-title').textContent = item.title || 'ไม่มีชื่อ';
+      el.querySelector('.note-preview').textContent = item.body || 'ว่าง...';
+    }
+  });
+  document.getElementById('stat-notes').textContent = state.notes.length;
+}
+
+function addTag(e) {
+  if (e.key !== 'Enter') return;
+  const input = document.getElementById('note-tag-input');
+  const tag = input.value.trim().replace(/^#/, '');
+  if (!tag || !activeNoteId) return;
+  const n = state.notes.find(n => n.id === activeNoteId);
+  if (n) { n.tags = [...new Set([...(n.tags||[]), tag])]; save(); renderNoteTags(n.tags); }
+  input.value = '';
+}
+
+function fmt(cmd) {
+  const body = document.getElementById('note-body');
+  const start = body.selectionStart, end = body.selectionEnd;
+  const sel = body.value.substring(start, end);
+  let insert = '';
+  if (cmd === 'bold') insert = `**${sel}**`;
+  else if (cmd === 'italic') insert = `_${sel}_`;
+  else if (cmd === 'h2') insert = `\n## ${sel}`;
+  else if (cmd === 'ul') insert = `\n- ${sel}`;
+  body.value = body.value.substring(0, start) + insert + body.value.substring(end);
+  saveCurrentNote();
+}
+
+// ──────────────────────────────────────────
+// CALENDAR
+// ──────────────────────────────────────────
+let calDate = new Date();
+let calView = 'month';
+
+function renderCalendar() {
+  const title = document.getElementById('cal-month-title');
+  title.textContent = `${TH_MONTHS[calDate.getMonth()]} ${calDate.getFullYear()}`;
+  if (calView === 'month') renderMonthCal();
+  else renderWeekCal();
+}
+
+function calNav(dir) {
+  if (calView === 'month') calDate.setMonth(calDate.getMonth() + dir);
+  else calDate.setDate(calDate.getDate() + dir * 7);
+  renderCalendar();
+}
+
+function setCalView(v, el) {
+  calView = v;
+  document.querySelectorAll('.cal-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderCalendar();
+}
+
+function getAllCalEvents() {
+  const evs = [...state.events];
+  // Add tasks with deadlines
+  state.tasks.filter(t => t.deadline).forEach(t => {
+    evs.push({ id: t.id + '_dl', title: '📋 ' + t.title, date: t.deadline, color: '#f75f5f', type: 'task' });
+  });
+  return evs;
+}
+
+function renderMonthCal() {
+  const wrap = document.getElementById('cal-grid-wrap');
+  const year = calDate.getFullYear(), month = calDate.getMonth();
+  const first = new Date(year, month, 1);
+  const last = new Date(year, month + 1, 0);
+  const startDow = first.getDay();
+  const todayS = todayStr();
+  const allEvs = getAllCalEvents();
+
+  let html = '<div class="cal-grid">';
+  TH_DAYS.forEach(d => { html += `<div class="cal-day-header">${d}</div>`; });
+
+  let day = 1 - startDow;
+  for (let r = 0; r < 6; r++) {
+    for (let c = 0; c < 7; c++, day++) {
+      const dt = new Date(year, month, day);
+      const ds = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+      const isToday = ds === todayS;
+      const otherMonth = dt.getMonth() !== month;
+      const dayEvs = allEvs.filter(e => e.date === ds);
+      html += `<div class="cal-cell ${isToday?'today':''} ${otherMonth?'other-month':''}" onclick="openModal('add-event',{date:'${ds}'})">
+        <div class="cal-day-num">${dt.getDate()}</div>
+        ${dayEvs.slice(0,3).map(e => `<div class="cal-event" style="background:${e.color||'var(--accent)'}22;color:${e.color||'var(--accent)'}">${e.title}</div>`).join('')}
+        ${dayEvs.length > 3 ? `<div style="font-size:9px;color:var(--text3)">+${dayEvs.length - 3} more</div>` : ''}
+      </div>`;
+    }
+  }
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
+function renderWeekCal() {
+  const wrap = document.getElementById('cal-grid-wrap');
+  wrap.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:20px">Weekly view – ดูใน Schedule module</div>';
+}
+
+// ──────────────────────────────────────────
+// MODALS
+// ──────────────────────────────────────────
+let modalCtx = {};
+
+function openModal(type, ctx = {}) {
+  modalCtx = { type, ...ctx };
+  const overlay = document.getElementById('modal-overlay');
+  const mc = document.getElementById('modal-content');
+  mc.innerHTML = getModalHtml(type, ctx);
+  overlay.classList.add('open');
+}
+
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+function closeModalOutside(e) { if (e.target.id === 'modal-overlay') closeModal(); }
+
+function getModalHtml(type, ctx) {
+  if (type === 'add-task') return `
+    <div class="modal-title">➕ เพิ่ม Task</div>
+    <div class="form-group"><label class="form-label">ชื่องาน</label><input class="form-input" id="ft-title" placeholder="ชื่อ task..." autofocus></div>
+    <div class="form-group"><label class="form-label">สถานะ</label>
+      <select class="form-select" id="ft-status">
+        ${COLS.map(c => `<option value="${c.id}" ${ctx.defaultStatus===c.id?'selected':''}>${c.name}</option>`).join('')}
+      </select></div>
+    <div class="form-group"><label class="form-label">Priority</label>
+      <select class="form-select" id="ft-priority">
+        <option value="high">⚡ สูง (สำคัญ+เร่งด่วน)</option>
+        <option value="medium" selected>○ กลาง (สำคัญ)</option>
+        <option value="low">· ต่ำ</option>
+      </select></div>
+    <div class="form-group"><label class="form-label">Quadrant (Priority Matrix)</label>
+      <select class="form-select" id="ft-quadrant">
+        <option value="q1">Q1 – สำคัญ + เร่งด่วน</option>
+        <option value="q2">Q2 – สำคัญ + ไม่เร่งด่วน</option>
+        <option value="q3">Q3 – ไม่สำคัญ + เร่งด่วน</option>
+        <option value="q4">Q4 – ไม่สำคัญ + ไม่เร่งด่วน</option>
+      </select></div>
+    <div class="form-group"><label class="form-label">Project (สำหรับ Progress)</label><input class="form-input" id="ft-project" placeholder="ชื่อโปรเจกต์..."></div>
+    <div class="form-group"><label class="form-label">Deadline</label><input type="date" class="form-input" id="ft-deadline"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="saveTask()">บันทึก</button>
+      <button class="btn btn-ghost" onclick="closeModal()">ยกเลิก</button>
+    </div>`;
+
+  if (type === 'add-sched') return `
+    <div class="modal-title">📅 เพิ่มกิจกรรม</div>
+    <div class="form-group"><label class="form-label">ชื่อกิจกรรม</label><input class="form-input" id="fs-title" placeholder="ชื่อกิจกรรม..." autofocus></div>
+    <div class="form-group"><label class="form-label">หมวดหมู่</label><input class="form-input" id="fs-cat" placeholder="เรียน / งาน / ออกกำลังกาย..."></div>
+    <div class="form-group"><label class="form-label">วันในสัปดาห์</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${TH_DAYS.map((d,i) => `<label style="display:flex;align-items:center;gap:3px;font-size:12px;cursor:pointer"><input type="checkbox" value="${i}" ${ctx.day===i?'checked':''} class="sched-day-cb"> ${d}</label>`).join('')}
+      </div></div>
+    <div style="display:flex;gap:10px">
+      <div class="form-group" style="flex:1"><label class="form-label">เริ่ม</label><input type="time" class="form-input" id="fs-start" value="${String(ctx.hour||8).padStart(2,'0')}:00"></div>
+      <div class="form-group" style="flex:1"><label class="form-label">สิ้นสุด</label><input type="time" class="form-input" id="fs-end" value="${String((ctx.hour||8)+1).padStart(2,'0')}:00"></div>
+    </div>
+    <div class="form-group"><label class="form-label">สี</label>
+      <div style="display:flex;gap:8px">
+        ${Object.entries(COLORS).map(([k,c]) => `<div onclick="selectSchedColor('${c}')" style="width:22px;height:22px;background:${c};border-radius:50%;cursor:pointer;border:2px solid transparent" class="sched-color-opt" data-c="${c}"></div>`).join('')}
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="saveSched()">บันทึก</button>
+      <button class="btn btn-ghost" onclick="closeModal()">ยกเลิก</button>
+    </div>`;
+
+  if (type === 'add-habit') return `
+    <div class="modal-title">✅ เพิ่ม Habit</div>
+    <div class="form-group"><label class="form-label">ชื่อ Habit</label><input class="form-input" id="fh-name" placeholder="เช่น ออกกำลังกาย, นั่งสมาธิ..." autofocus></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="saveHabit()">บันทึก</button>
+      <button class="btn btn-ghost" onclick="closeModal()">ยกเลิก</button>
+    </div>`;
+
+  if (type === 'add-event') return `
+    <div class="modal-title">🗓 เพิ่ม Event</div>
+    <div class="form-group"><label class="form-label">ชื่อ Event</label><input class="form-input" id="fe-title" placeholder="ชื่อ event..." autofocus></div>
+    <div class="form-group"><label class="form-label">วันที่</label><input type="date" class="form-input" id="fe-date" value="${ctx.date || todayStr()}"></div>
+    <div class="form-group"><label class="form-label">สี</label>
+      <div style="display:flex;gap:8px">
+        ${Object.entries(COLORS).slice(0,5).map(([k,c]) => `<div onclick="selectEventColor('${c}')" style="width:22px;height:22px;background:${c};border-radius:50%;cursor:pointer" class="ev-color-opt" data-c="${c}"></div>`).join('')}
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="saveEvent()">บันทึก</button>
+      <button class="btn btn-ghost" onclick="closeModal()">ยกเลิก</button>
+    </div>`;
+
+  if (type === 'quick-add') return `
+    <div class="modal-title">⚡ Quick Add</div>
+    <div style="display:flex;gap:10px;margin-bottom:16px">
+      <button class="btn btn-primary" onclick="closeModal();openModal('add-task')">Task ใหม่</button>
+      <button class="btn btn-ghost" onclick="closeModal();navigate('notes',document.querySelector('[data-page=notes]'));newNote()">Note ใหม่</button>
+      <button class="btn btn-ghost" onclick="closeModal();openModal('add-event')">Event ใหม่</button>
+    </div>`;
+}
+
+let schedColor = '#4f8ef7';
+function selectSchedColor(c) {
+  schedColor = c;
+  document.querySelectorAll('.sched-color-opt').forEach(el => {
+    el.style.borderColor = el.dataset.c === c ? 'white' : 'transparent';
+  });
+}
+
+let eventColor = '#4f8ef7';
+function selectEventColor(c) {
+  eventColor = c;
+  document.querySelectorAll('.ev-color-opt').forEach(el => {
+    el.style.outline = el.dataset.c === c ? '2px solid white' : 'none';
+  });
+}
+
+function saveTask() {
+  const title = document.getElementById('ft-title')?.value.trim();
+  if (!title) return alert('กรุณากรอกชื่องาน');
+  state.tasks.push({
+    id: uid(), title,
+    status: document.getElementById('ft-status').value,
+    priority: document.getElementById('ft-priority').value,
+    quadrant: document.getElementById('ft-quadrant').value,
+    project: document.getElementById('ft-project').value.trim(),
+    deadline: document.getElementById('ft-deadline').value || null,
+    progress: 0, created: Date.now()
+  });
+  save(); closeModal();
+  renderFramework(); renderDashboard(); renderCalendar();
+}
+
+function saveSched() {
+  const title = document.getElementById('fs-title')?.value.trim();
+  if (!title) return alert('กรุณากรอกชื่อกิจกรรม');
+  const days = [...document.querySelectorAll('.sched-day-cb:checked')].map(c => parseInt(c.value));
+  state.schedItems.push({
+    id: uid(), title, category: document.getElementById('fs-cat').value.trim() || 'ทั่วไป',
+    days, startTime: document.getElementById('fs-start').value,
+    endTime: document.getElementById('fs-end').value, color: schedColor
+  });
+  save(); closeModal(); renderSchedule(); renderDashboard();
+}
+
+function saveHabit() {
+  const name = document.getElementById('fh-name')?.value.trim();
+  if (!name) return alert('กรุณากรอกชื่อ Habit');
+  state.habits.push({ id: uid(), name });
+  save(); closeModal(); renderHabits();
+}
+
+function saveEvent() {
+  const title = document.getElementById('fe-title')?.value.trim();
+  const date = document.getElementById('fe-date')?.value;
+  if (!title || !date) return alert('กรุณากรอกข้อมูลให้ครบ');
+  state.events.push({ id: uid(), title, date, color: eventColor });
+  save(); closeModal(); renderCalendar();
+}
+
+function quickAdd() { openModal('quick-add'); }
+
+// ──────────────────────────────────────────
+// MASTER SEARCH
+// ──────────────────────────────────────────
+let searchTimeout = null;
+function masterSearch(q) {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    if (!q.trim()) return;
+    const results = [];
+    const ql = q.toLowerCase();
+    state.tasks.filter(t => t.title.toLowerCase().includes(ql)).forEach(t => results.push({ type: 'Task', icon: '◈', label: t.title, action: () => navigate('framework', document.querySelector('[data-page=framework]')) }));
+    state.notes.filter(n => (n.title+n.body).toLowerCase().includes(ql)).forEach(n => results.push({ type: 'Note', icon: '◧', label: n.title || 'ไม่มีชื่อ', action: () => { navigate('notes', document.querySelector('[data-page=notes]')); openNote(n.id); } }));
+    state.events.filter(e => e.title.toLowerCase().includes(ql)).forEach(e => results.push({ type: 'Event', icon: '◻', label: e.title, action: () => navigate('calendar', document.querySelector('[data-page=calendar]')) }));
+    if (results.length > 0) {
+      // Show as a mini dropdown
+      let dd = document.getElementById('search-dropdown');
+      if (!dd) { dd = document.createElement('div'); dd.id = 'search-dropdown'; dd.style.cssText = 'position:absolute;top:40px;left:0;right:0;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;z-index:50;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.4)'; document.querySelector('.search-wrap').style.position='relative'; document.querySelector('.search-wrap').appendChild(dd); }
+      dd.innerHTML = results.slice(0,6).map((r,i) => `<div style="padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background=''" onclick="searchResultClick(${i})">${r.icon} <span style="font-size:11px;color:var(--text3);width:40px">${r.type}</span><span style="font-size:13px">${r.label}</span></div>`).join('');
+      window._searchResults = results;
+    } else {
+      removeSearchDropdown();
+    }
+  }, 300);
+}
+
+function searchResultClick(i) {
+  window._searchResults?.[i]?.action?.();
+  removeSearchDropdown();
+  document.getElementById('master-search').value = '';
+}
+
+function removeSearchDropdown() {
+  const dd = document.getElementById('search-dropdown');
+  if (dd) dd.remove();
+}
+document.addEventListener('click', e => { if (!e.target.closest('.search-wrap')) removeSearchDropdown(); });
+
+// ──────────────────────────────────────────
+// POMODORO
+// ──────────────────────────────────────────
+let pomInterval = null, pomSeconds = 25 * 60, pomRunning = false, pomSession = 1, pomIsBreak = false;
+
+function pomUpdate() {
+  const m = String(Math.floor(pomSeconds / 60)).padStart(2, '0');
+  const s = String(pomSeconds % 60).padStart(2, '0');
+  const disp = document.getElementById('pom-display');
+  const lab = document.getElementById('pom-session-label');
+  const btn = document.getElementById('pom-start-btn');
+  if (disp) { disp.textContent = `${m}:${s}`; disp.className = 'pom-time ' + (pomRunning ? (pomIsBreak ? 'break' : 'running') : ''); }
+  if (lab) lab.textContent = pomIsBreak ? `Break · ครั้งที่ ${pomSession}` : `Focus · Session ${pomSession}`;
+  if (btn) btn.textContent = pomRunning ? '⏸ PAUSE' : '▶ START';
+}
+
+function pomToggle() {
+  pomRunning = !pomRunning;
+  if (pomRunning) {
+    pomInterval = setInterval(() => {
+      pomSeconds--;
+      if (pomSeconds <= 0) {
+        pomRunning = false; clearInterval(pomInterval);
+        if (!pomIsBreak) { pomIsBreak = true; pomSeconds = 5 * 60; alert('🍅 Pomodoro เสร็จ! พักสัก 5 นาที'); }
+        else { pomIsBreak = false; pomSession++; pomSeconds = 25 * 60; alert('⏰ พักเสร็จ! เริ่ม Session ใหม่'); }
+      }
+      pomUpdate();
+    }, 1000);
+  } else { clearInterval(pomInterval); }
+  pomUpdate();
+}
+
+function pomReset() {
+  pomRunning = false; clearInterval(pomInterval);
+  pomIsBreak = false; pomSeconds = 25 * 60;
+  pomUpdate();
+}
+
+// ──────────────────────────────────────────
+// INIT
+// ──────────────────────────────────────────
+load();
+initTodayBadge();
+pomUpdate();
+renderDashboard();
+</script>
+</body>
+</html>
