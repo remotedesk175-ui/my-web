@@ -459,9 +459,21 @@ svg.flow-arrows { position: absolute; top: 0; left: 0; width: 100%; height: 100%
 .btn-ghost { background: none; color: var(--text2); border-color: var(--border); }
 .btn-ghost:hover { border-color: var(--border2); color: var(--text); }
 
-.empty-state { text-align: center; padding: 40px; color: var(--text3); }
-.empty-state .es-icon { font-size: 36px; margin-bottom: 10px; }
-.empty-state .es-text { font-size: 13px; }
+/* ─── CALCULATOR ─── */
+.calc-btn {
+  padding: 12px 6px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--bg3); color: var(--text); font-size: 15px; font-weight: 600;
+  cursor: pointer; font-family: 'Space Mono', monospace;
+  transition: all var(--transition); text-align: center;
+}
+.calc-btn:hover { background: var(--bg4); border-color: var(--border2); }
+.calc-btn:active { transform: scale(0.95); }
+.calc-btn.fn { background: var(--bg4); color: var(--text2); font-size: 12px; }
+.calc-btn.fn:hover { color: var(--accent); border-color: var(--accent); }
+.calc-btn.op { background: rgba(79,142,247,0.12); border-color: rgba(79,142,247,0.3); color: var(--accent); font-size: 18px; }
+.calc-btn.op:hover { background: rgba(79,142,247,0.22); }
+.calc-btn.eq { background: var(--accent); border-color: var(--accent); color: white; font-size: 18px; }
+.calc-btn.eq:hover { background: #3a7ef0; }
 </style>
 </head>
 <body>
@@ -499,10 +511,30 @@ svg.flow-arrows { position: absolute; top: 0; left: 0; width: 100%; height: 100%
       <div class="nav-item" data-page="calendar" onclick="navigate('calendar',this)">
         <span class="nav-icon">◻</span> Calendar
       </div>
+      <div class="nav-item" data-page="calculator" onclick="navigate('calculator',this)">
+        <span class="nav-icon">∑</span> Calculator
+      </div>
     </div>
     <div class="sidebar-bottom">
       <div class="pomodoro-widget">
-        <div class="pom-label">POMODORO</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div class="pom-label">POMODORO</div>
+          <button onclick="togglePomSettings()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:2px 4px;border-radius:4px;transition:color 0.2s" title="ตั้งเวลา">⚙</button>
+        </div>
+        <div id="pom-settings" style="display:none;margin-bottom:8px;padding:8px;background:var(--bg4);border-radius:6px;border:1px solid var(--border)">
+          <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;margin-bottom:6px">ตั้งเวลา (นาที)</div>
+          <div style="display:flex;gap:6px;align-items:center;margin-bottom:5px">
+            <span style="font-size:10px;color:var(--text3);width:38px">Focus</span>
+            <input type="number" id="pom-focus-input" min="1" max="120" value="25" style="width:50px;padding:3px 6px;background:var(--bg2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:12px;font-family:'Space Mono',monospace;outline:none">
+            <span style="font-size:10px;color:var(--text3)">นาที</span>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px">
+            <span style="font-size:10px;color:var(--text3);width:38px">Break</span>
+            <input type="number" id="pom-break-input" min="1" max="60" value="5" style="width:50px;padding:3px 6px;background:var(--bg2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:12px;font-family:'Space Mono',monospace;outline:none">
+            <span style="font-size:10px;color:var(--text3)">นาที</span>
+          </div>
+          <button onclick="applyPomSettings()" style="width:100%;padding:5px;background:rgba(79,142,247,0.15);border:1px solid var(--accent);border-radius:5px;color:var(--accent);font-size:11px;font-weight:700;cursor:pointer;font-family:'Space Mono',monospace">✓ ใช้งาน</button>
+        </div>
         <div class="pom-time" id="pom-display">25:00</div>
         <div class="pom-controls">
           <button class="pom-btn start" id="pom-start-btn" onclick="pomToggle()">▶ START</button>
@@ -693,6 +725,130 @@ svg.flow-arrows { position: absolute; top: 0; left: 0; width: 100%; height: 100%
         </div>
         <div id="cal-grid-wrap"></div>
       </div>
+      <!-- CALCULATOR -->
+      <div class="page" id="page-calculator">
+        <div class="grid2" style="gap:20px;align-items:start">
+          <!-- Standard + Math Calculator -->
+          <div>
+            <div class="section-title" style="margin-bottom:14px">CALCULATOR</div>
+            <div class="card" style="padding:0;overflow:hidden">
+              <!-- Display -->
+              <div style="padding:16px 18px 10px;background:var(--bg3);border-bottom:1px solid var(--border)">
+                <div id="calc-expr" style="font-size:11px;color:var(--text3);font-family:'Space Mono',monospace;min-height:16px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+                <div id="calc-display" style="font-size:32px;font-weight:700;font-family:'Space Mono',monospace;color:var(--text);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:1px">0</div>
+              </div>
+              <!-- Buttons -->
+              <div style="padding:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+                <!-- Row 1 -->
+                <button class="calc-btn fn" onclick="calcFn('clear')">AC</button>
+                <button class="calc-btn fn" onclick="calcFn('sign')">+/−</button>
+                <button class="calc-btn fn" onclick="calcFn('percent')">%</button>
+                <button class="calc-btn op" onclick="calcOp('/')">÷</button>
+                <!-- Row 2 -->
+                <button class="calc-btn" onclick="calcNum('7')">7</button>
+                <button class="calc-btn" onclick="calcNum('8')">8</button>
+                <button class="calc-btn" onclick="calcNum('9')">9</button>
+                <button class="calc-btn op" onclick="calcOp('*')">×</button>
+                <!-- Row 3 -->
+                <button class="calc-btn" onclick="calcNum('4')">4</button>
+                <button class="calc-btn" onclick="calcNum('5')">5</button>
+                <button class="calc-btn" onclick="calcNum('6')">6</button>
+                <button class="calc-btn op" onclick="calcOp('-')">−</button>
+                <!-- Row 4 -->
+                <button class="calc-btn" onclick="calcNum('1')">1</button>
+                <button class="calc-btn" onclick="calcNum('2')">2</button>
+                <button class="calc-btn" onclick="calcNum('3')">3</button>
+                <button class="calc-btn op" onclick="calcOp('+')">+</button>
+                <!-- Row 5 -->
+                <button class="calc-btn" onclick="calcNum('0')" style="grid-column:span 2">0</button>
+                <button class="calc-btn" onclick="calcDot()">.</button>
+                <button class="calc-btn eq" onclick="calcEquals()">=</button>
+              </div>
+            </div>
+            <!-- History -->
+            <div class="card" style="margin-top:14px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                <div class="card-title" style="margin-bottom:0"><span class="dot" style="background:var(--text3)"></span>ประวัติ</div>
+                <button onclick="clearCalcHistory()" style="background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer">ล้าง</button>
+              </div>
+              <div id="calc-history" style="display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto">
+                <div style="color:var(--text3);font-size:12px;text-align:center;padding:20px 0">ยังไม่มีประวัติ</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Math Functions -->
+          <div>
+            <div class="section-title" style="margin-bottom:14px">MATH FUNCTIONS</div>
+            <!-- Scientific -->
+            <div class="card" style="margin-bottom:14px">
+              <div class="card-title"><span class="dot" style="background:var(--accent)"></span>Scientific</div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+                <button class="calc-btn fn" onclick="calcSci('sqrt')">√x</button>
+                <button class="calc-btn fn" onclick="calcSci('sq')">x²</button>
+                <button class="calc-btn fn" onclick="calcSci('cube')">x³</button>
+                <button class="calc-btn fn" onclick="calcSci('inv')">1/x</button>
+                <button class="calc-btn fn" onclick="calcSci('abs')">|x|</button>
+                <button class="calc-btn fn" onclick="calcSci('factorial')">n!</button>
+                <button class="calc-btn fn" onclick="calcSci('log')">log</button>
+                <button class="calc-btn fn" onclick="calcSci('ln')">ln</button>
+                <button class="calc-btn fn" onclick="calcSci('exp')">eˣ</button>
+                <button class="calc-btn fn" onclick="calcSci('sin')">sin</button>
+                <button class="calc-btn fn" onclick="calcSci('cos')">cos</button>
+                <button class="calc-btn fn" onclick="calcSci('tan')">tan</button>
+                <button class="calc-btn fn" onclick="calcSci('asin')">sin⁻¹</button>
+                <button class="calc-btn fn" onclick="calcSci('acos')">cos⁻¹</button>
+                <button class="calc-btn fn" onclick="calcSci('atan')">tan⁻¹</button>
+                <button class="calc-btn fn" onclick="insertConst('pi')">π</button>
+                <button class="calc-btn fn" onclick="insertConst('e')">e</button>
+                <button class="calc-btn fn" onclick="calcFn('backspace')">⌫</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
+                <span style="font-size:11px;color:var(--text3)">โหมด:</span>
+                <button id="deg-btn" class="calc-btn fn" onclick="setDegMode('deg')" style="flex:1;font-size:11px">DEG</button>
+                <button id="rad-btn" class="calc-btn" onclick="setDegMode('rad')" style="flex:1;font-size:11px">RAD</button>
+              </div>
+            </div>
+
+            <!-- Expression evaluator -->
+            <div class="card" style="margin-bottom:14px">
+              <div class="card-title"><span class="dot" style="background:var(--yellow)"></span>พิมพ์สูตรคณิตศาสตร์</div>
+              <div style="font-size:11px;color:var(--text3);margin-bottom:8px">พิมพ์สูตรได้เลย เช่น: <span style="color:var(--accent);font-family:'Space Mono',monospace">2^10</span>, <span style="color:var(--accent);font-family:'Space Mono',monospace">sqrt(144)</span>, <span style="color:var(--accent);font-family:'Space Mono',monospace">(3+4)*sin(30)</span></div>
+              <div style="display:flex;gap:8px">
+                <input type="text" id="expr-input" class="form-input" placeholder="พิมพ์สูตร..." onkeydown="if(event.key==='Enter')evalExpr()" style="font-family:'Space Mono',monospace;font-size:13px">
+                <button class="btn btn-primary" onclick="evalExpr()" style="white-space:nowrap">=</button>
+              </div>
+              <div id="expr-result" style="margin-top:10px;padding:10px;background:var(--bg3);border-radius:8px;font-family:'Space Mono',monospace;font-size:15px;color:var(--green);display:none"></div>
+              <div id="expr-error" style="margin-top:8px;font-size:12px;color:var(--red);display:none"></div>
+            </div>
+
+            <!-- Unit Converter -->
+            <div class="card">
+              <div class="card-title"><span class="dot" style="background:var(--orange)"></span>แปลงหน่วย</div>
+              <div style="display:flex;gap:8px;margin-bottom:10px">
+                <select id="unit-type" class="form-select" onchange="updateUnitOptions()" style="flex:1">
+                  <option value="length">ความยาว</option>
+                  <option value="weight">น้ำหนัก</option>
+                  <option value="temp">อุณหภูมิ</option>
+                  <option value="area">พื้นที่</option>
+                  <option value="speed">ความเร็ว</option>
+                </select>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <div style="flex:1">
+                  <input type="number" id="unit-val" class="form-input" placeholder="ค่า..." oninput="convertUnit()">
+                  <select id="unit-from" class="form-select" style="margin-top:6px" onchange="convertUnit()"></select>
+                </div>
+                <div style="font-size:20px;color:var(--text3)">→</div>
+                <div style="flex:1">
+                  <div id="unit-result" style="padding:8px 11px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;font-family:'Space Mono',monospace;font-size:15px;color:var(--green);min-height:38px;display:flex;align-items:center">–</div>
+                  <select id="unit-to" class="form-select" style="margin-top:6px" onchange="convertUnit()"></select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -735,7 +891,7 @@ function load() {
 // ──────────────────────────────────────────
 // NAVIGATION
 // ──────────────────────────────────────────
-const PAGE_TITLES = { dashboard:'Dashboard', framework:'Framework & Goals', workflow:'Workflow Builder', schedule:'Schedule & Timetable', notes:'Notes', calendar:'Calendar' };
+const PAGE_TITLES = { dashboard:'Dashboard', framework:'Framework & Goals', workflow:'Workflow Builder', schedule:'Schedule & Timetable', notes:'Notes', calendar:'Calendar', calculator:'Calculator & Math' };
 
 function navigate(page, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -753,6 +909,7 @@ function renderPage(page) {
   if (page === 'schedule') renderSchedule();
   if (page === 'notes') renderNotes();
   if (page === 'calendar') renderCalendar();
+  if (page === 'calculator') initCalculator();
 }
 
 // ──────────────────────────────────────────
@@ -1511,7 +1668,26 @@ document.addEventListener('click', e => { if (!e.target.closest('.search-wrap'))
 // ──────────────────────────────────────────
 // POMODORO
 // ──────────────────────────────────────────
+let pomFocusMin = 25, pomBreakMin = 5;
 let pomInterval = null, pomSeconds = 25 * 60, pomRunning = false, pomSession = 1, pomIsBreak = false;
+
+function togglePomSettings() {
+  const s = document.getElementById('pom-settings');
+  s.style.display = s.style.display === 'none' ? 'block' : 'none';
+}
+
+function applyPomSettings() {
+  if (pomRunning) { alert('กรุณาหยุด Timer ก่อนเปลี่ยนเวลา'); return; }
+  const f = parseInt(document.getElementById('pom-focus-input').value) || 25;
+  const b = parseInt(document.getElementById('pom-break-input').value) || 5;
+  pomFocusMin = Math.min(120, Math.max(1, f));
+  pomBreakMin = Math.min(60, Math.max(1, b));
+  document.getElementById('pom-focus-input').value = pomFocusMin;
+  document.getElementById('pom-break-input').value = pomBreakMin;
+  pomIsBreak = false; pomSeconds = pomFocusMin * 60; pomSession = 1;
+  pomUpdate();
+  document.getElementById('pom-settings').style.display = 'none';
+}
 
 function pomUpdate() {
   const m = String(Math.floor(pomSeconds / 60)).padStart(2, '0');
@@ -1531,8 +1707,8 @@ function pomToggle() {
       pomSeconds--;
       if (pomSeconds <= 0) {
         pomRunning = false; clearInterval(pomInterval);
-        if (!pomIsBreak) { pomIsBreak = true; pomSeconds = 5 * 60; alert('🍅 Pomodoro เสร็จ! พักสัก 5 นาที'); }
-        else { pomIsBreak = false; pomSession++; pomSeconds = 25 * 60; alert('⏰ พักเสร็จ! เริ่ม Session ใหม่'); }
+        if (!pomIsBreak) { pomIsBreak = true; pomSeconds = pomBreakMin * 60; alert(`🍅 Pomodoro เสร็จ! พักสัก ${pomBreakMin} นาที`); }
+        else { pomIsBreak = false; pomSession++; pomSeconds = pomFocusMin * 60; alert(`⏰ พักเสร็จ! เริ่ม Session ${pomSession}`); }
       }
       pomUpdate();
     }, 1000);
@@ -1542,8 +1718,226 @@ function pomToggle() {
 
 function pomReset() {
   pomRunning = false; clearInterval(pomInterval);
-  pomIsBreak = false; pomSeconds = 25 * 60;
+  pomIsBreak = false; pomSeconds = pomFocusMin * 60;
   pomUpdate();
+}
+
+// ──────────────────────────────────────────
+// CALCULATOR
+// ──────────────────────────────────────────
+let calcCurrent = '0', calcPrev = '', calcOperator = null, calcNewNum = false, calcHistory = [], degMode = 'deg';
+
+function toRad(d) { return degMode === 'deg' ? d * Math.PI / 180 : d; }
+function toDeg(r) { return degMode === 'deg' ? r * 180 / Math.PI : r; }
+
+function initCalculator() {
+  updateUnitOptions();
+  renderCalcHistory();
+  setDegMode('deg');
+}
+
+function calcDisplay() {
+  document.getElementById('calc-display').textContent = parseFloat(calcCurrent).toLocaleString('en', { maximumFractionDigits: 10 });
+}
+
+function calcNum(n) {
+  if (calcNewNum) { calcCurrent = n; calcNewNum = false; }
+  else calcCurrent = calcCurrent === '0' ? n : calcCurrent + n;
+  calcDisplay();
+}
+
+function calcDot() {
+  if (calcNewNum) { calcCurrent = '0.'; calcNewNum = false; }
+  else if (!calcCurrent.includes('.')) calcCurrent += '.';
+  calcDisplay();
+}
+
+function calcOp(op) {
+  if (calcOperator && !calcNewNum) calcEquals(true);
+  calcPrev = calcCurrent;
+  calcOperator = op;
+  calcNewNum = true;
+  const opSym = { '+': '+', '-': '−', '*': '×', '/': '÷' };
+  document.getElementById('calc-expr').textContent = `${calcPrev} ${opSym[op] || op}`;
+}
+
+function calcEquals(chain = false) {
+  if (!calcOperator || !calcPrev) return;
+  const a = parseFloat(calcPrev), b = parseFloat(calcCurrent);
+  let result;
+  if (calcOperator === '+') result = a + b;
+  else if (calcOperator === '-') result = a - b;
+  else if (calcOperator === '*') result = a * b;
+  else if (calcOperator === '/') result = b === 0 ? 'Error' : a / b;
+  const expr = `${a} ${{'+':`+`,'-':`−`,'*':`×`,'/':`÷`}[calcOperator]} ${b} =`;
+  if (!chain) {
+    document.getElementById('calc-expr').textContent = expr;
+    addCalcHistory(expr, String(result));
+    calcOperator = null;
+  }
+  calcCurrent = String(result);
+  calcPrev = calcCurrent;
+  calcNewNum = true;
+  calcDisplay();
+}
+
+function calcFn(fn) {
+  if (fn === 'clear') { calcCurrent = '0'; calcPrev = ''; calcOperator = null; calcNewNum = false; document.getElementById('calc-expr').textContent = ''; calcDisplay(); }
+  else if (fn === 'sign') { calcCurrent = String(-parseFloat(calcCurrent)); calcDisplay(); }
+  else if (fn === 'percent') { calcCurrent = String(parseFloat(calcCurrent) / 100); calcDisplay(); }
+  else if (fn === 'backspace') { calcCurrent = calcCurrent.length > 1 ? calcCurrent.slice(0, -1) : '0'; calcDisplay(); }
+}
+
+function calcSci(fn) {
+  const x = parseFloat(calcCurrent);
+  let result, label;
+  if (fn === 'sqrt') { result = Math.sqrt(x); label = `√(${x})`; }
+  else if (fn === 'sq') { result = x * x; label = `${x}²`; }
+  else if (fn === 'cube') { result = x * x * x; label = `${x}³`; }
+  else if (fn === 'inv') { result = x === 0 ? 'Error' : 1 / x; label = `1/${x}`; }
+  else if (fn === 'abs') { result = Math.abs(x); label = `|${x}|`; }
+  else if (fn === 'factorial') {
+    if (x < 0 || !Number.isInteger(x) || x > 170) { result = 'Error'; label = `${x}!`; }
+    else { result = 1; for (let i = 2; i <= x; i++) result *= i; label = `${x}!`; }
+  }
+  else if (fn === 'log') { result = x <= 0 ? 'Error' : Math.log10(x); label = `log(${x})`; }
+  else if (fn === 'ln') { result = x <= 0 ? 'Error' : Math.log(x); label = `ln(${x})`; }
+  else if (fn === 'exp') { result = Math.exp(x); label = `e^(${x})`; }
+  else if (fn === 'sin') { result = Math.sin(toRad(x)); label = `sin(${x}${degMode==='deg'?'°':'r'})`; }
+  else if (fn === 'cos') { result = Math.cos(toRad(x)); label = `cos(${x}${degMode==='deg'?'°':'r'})`; }
+  else if (fn === 'tan') { result = Math.tan(toRad(x)); label = `tan(${x}${degMode==='deg'?'°':'r'})`; }
+  else if (fn === 'asin') { result = toDeg(Math.asin(x)); label = `sin⁻¹(${x})`; }
+  else if (fn === 'acos') { result = toDeg(Math.acos(x)); label = `cos⁻¹(${x})`; }
+  else if (fn === 'atan') { result = toDeg(Math.atan(x)); label = `tan⁻¹(${x})`; }
+
+  if (result === undefined) return;
+  const r = typeof result === 'number' ? parseFloat(result.toPrecision(12)) : result;
+  document.getElementById('calc-expr').textContent = label;
+  addCalcHistory(label, String(r));
+  calcCurrent = String(r); calcNewNum = true; calcDisplay();
+}
+
+function insertConst(c) {
+  const v = c === 'pi' ? Math.PI : Math.E;
+  calcCurrent = String(v); calcNewNum = false; calcDisplay();
+}
+
+function setDegMode(m) {
+  degMode = m;
+  document.getElementById('deg-btn').className = 'calc-btn ' + (m === 'deg' ? 'fn op' : 'fn');
+  document.getElementById('rad-btn').className = 'calc-btn ' + (m === 'rad' ? 'fn op' : 'fn');
+}
+
+function addCalcHistory(expr, result) {
+  calcHistory.unshift({ expr, result, time: new Date().toLocaleTimeString('th') });
+  if (calcHistory.length > 30) calcHistory.pop();
+  renderCalcHistory();
+}
+
+function clearCalcHistory() { calcHistory = []; renderCalcHistory(); }
+
+function renderCalcHistory() {
+  const el = document.getElementById('calc-history');
+  if (!el) return;
+  if (calcHistory.length === 0) { el.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px 0">ยังไม่มีประวัติ</div>'; return; }
+  el.innerHTML = calcHistory.map(h => `
+    <div onclick="calcCurrent=h.result;calcNewNum=true;calcDisplay()" style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:var(--bg3);border-radius:6px;cursor:pointer;border:1px solid var(--border)" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div>
+        <div style="font-size:11px;color:var(--text3);font-family:'Space Mono',monospace">${h.expr}</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);font-family:'Space Mono',monospace">${h.result}</div>
+      </div>
+      <div style="font-size:10px;color:var(--text3)">${h.time}</div>
+    </div>
+  `).join('');
+}
+
+// Expression Evaluator
+function evalExpr() {
+  const raw = document.getElementById('expr-input').value.trim();
+  const resEl = document.getElementById('expr-result');
+  const errEl = document.getElementById('expr-error');
+  resEl.style.display = 'none'; errEl.style.display = 'none';
+  if (!raw) return;
+  try {
+    // Safe math evaluation
+    let expr = raw
+      .replace(/\^/g, '**')
+      .replace(/sqrt\(/g, 'Math.sqrt(')
+      .replace(/cbrt\(/g, 'Math.cbrt(')
+      .replace(/abs\(/g, 'Math.abs(')
+      .replace(/log\(/g, 'Math.log10(')
+      .replace(/ln\(/g, 'Math.log(')
+      .replace(/sin\(/g, degMode==='deg' ? '(x=>Math.sin(x*Math.PI/180))(' : 'Math.sin(')
+      .replace(/cos\(/g, degMode==='deg' ? '(x=>Math.cos(x*Math.PI/180))(' : 'Math.cos(')
+      .replace(/tan\(/g, degMode==='deg' ? '(x=>Math.tan(x*Math.PI/180))(' : 'Math.tan(')
+      .replace(/\bpi\b/g, 'Math.PI')
+      .replace(/\be\b/g, 'Math.E')
+      .replace(/[^0-9+\-*/().,\s.Math\w]/g, '');
+    // eslint-disable-next-line no-new-func
+    const result = Function('"use strict"; return (' + expr + ')')();
+    if (typeof result !== 'number' || !isFinite(result)) throw new Error('ผลลัพธ์ไม่ถูกต้อง');
+    const r = parseFloat(result.toPrecision(12));
+    resEl.textContent = `= ${r}`;
+    resEl.style.display = 'block';
+    addCalcHistory(raw + ' =', String(r));
+    calcCurrent = String(r); calcNewNum = true; calcDisplay();
+  } catch(e) {
+    errEl.textContent = '⚠ สูตรไม่ถูกต้อง กรุณาตรวจสอบใหม่';
+    errEl.style.display = 'block';
+  }
+}
+
+// Unit Converter
+const UNITS = {
+  length: { m:'เมตร (m)', km:'กิโลเมตร (km)', cm:'เซนติเมตร (cm)', mm:'มิลลิเมตร (mm)', mi:'ไมล์ (mi)', ft:'ฟุต (ft)', in:'นิ้ว (in)', yd:'หลา (yd)' },
+  weight: { kg:'กิโลกรัม (kg)', g:'กรัม (g)', mg:'มิลลิกรัม (mg)', lb:'ปอนด์ (lb)', oz:'ออนซ์ (oz)', t:'ตัน (t)' },
+  temp:   { c:'เซลเซียส (°C)', f:'ฟาเรนไฮต์ (°F)', k:'เคลวิน (K)' },
+  area:   { m2:'ตร.เมตร (m²)', km2:'ตร.กม (km²)', cm2:'ตร.ซม (cm²)', ha:'เฮกตาร์ (ha)', rai:'ไร่', wa:'ตร.วา', ft2:'ตร.ฟุต (ft²)', in2:'ตร.นิ้ว (in²)' },
+  speed:  { mps:'ม./วินาที (m/s)', kph:'กม./ชม. (km/h)', mph:'ไมล์/ชม (mph)', knot:'นอต (knot)' },
+};
+const TO_BASE = {
+  // length → meter
+  m:1,km:1000,cm:0.01,mm:0.001,mi:1609.344,ft:0.3048,in:0.0254,yd:0.9144,
+  // weight → kg
+  kg:1,g:0.001,mg:0.000001,lb:0.453592,oz:0.0283495,t:1000,
+  // area → m²
+  m2:1,km2:1e6,cm2:0.0001,ha:10000,rai:1600,wa:4,ft2:0.092903,in2:0.00064516,
+  // speed → m/s
+  mps:1,kph:1/3.6,mph:0.44704,knot:0.514444,
+};
+
+function updateUnitOptions() {
+  const type = document.getElementById('unit-type').value;
+  const opts = Object.entries(UNITS[type]).map(([k,v]) => `<option value="${k}">${v}</option>`).join('');
+  document.getElementById('unit-from').innerHTML = opts;
+  document.getElementById('unit-to').innerHTML = opts;
+  document.getElementById('unit-to').selectedIndex = 1;
+  convertUnit();
+}
+
+function convertUnit() {
+  const val = parseFloat(document.getElementById('unit-val')?.value);
+  const from = document.getElementById('unit-from')?.value;
+  const to = document.getElementById('unit-to')?.value;
+  const type = document.getElementById('unit-type')?.value;
+  const resEl = document.getElementById('unit-result');
+  if (!resEl) return;
+  if (isNaN(val)) { resEl.textContent = '–'; return; }
+
+  let result;
+  if (type === 'temp') {
+    let celsius;
+    if (from === 'c') celsius = val;
+    else if (from === 'f') celsius = (val - 32) * 5/9;
+    else celsius = val - 273.15;
+    if (to === 'c') result = celsius;
+    else if (to === 'f') result = celsius * 9/5 + 32;
+    else result = celsius + 273.15;
+  } else {
+    const base = val * (TO_BASE[from] || 1);
+    result = base / (TO_BASE[to] || 1);
+  }
+  resEl.textContent = parseFloat(result.toPrecision(8)).toLocaleString('en', { maximumFractionDigits: 8 });
 }
 
 // ──────────────────────────────────────────
