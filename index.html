@@ -474,6 +474,43 @@ svg.flow-arrows { position: absolute; top: 0; left: 0; width: 100%; height: 100%
 .calc-btn.op:hover { background: rgba(79,142,247,0.22); }
 .calc-btn.eq { background: var(--accent); border-color: var(--accent); color: white; font-size: 18px; }
 .calc-btn.eq:hover { background: #3a7ef0; }
+
+/* ─── CALC TABS ─── */
+.calc-tabs { display: flex; gap: 2px; background: var(--bg3); border-radius: var(--radius-sm); padding: 3px; border: 1px solid var(--border); margin-bottom: 16px; }
+.calc-tab { flex: 1; padding: 7px 4px; border-radius: 6px; font-size: 10px; font-weight: 700; cursor: pointer; color: var(--text3); text-align: center; transition: all var(--transition); font-family: 'Space Mono', monospace; letter-spacing: 0.3px; background: none; border: none; }
+.calc-tab:hover { color: var(--text); }
+.calc-tab.active { background: var(--bg4); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+.calc-tab-panel { display: none; }
+.calc-tab-panel.active { display: block; }
+
+.formula-grid { display: flex; flex-direction: column; gap: 7px; }
+.formula-item {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 8px; padding: 9px 12px;
+  cursor: pointer; transition: all var(--transition);
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.formula-item:hover { border-color: var(--border2); background: var(--bg4); }
+.fi-left { flex: 1; }
+.fi-name { font-size: 11px; font-weight: 600; color: var(--text2); margin-bottom: 2px; }
+.fi-expr { font-size: 12px; font-family: 'Space Mono', monospace; color: var(--accent); }
+.fi-badge { font-size: 10px; padding: 2px 6px; border-radius: 20px; background: rgba(79,142,247,0.12); color: var(--accent); white-space: nowrap; font-family: 'Space Mono', monospace; }
+.fi-badge.green { background: rgba(62,207,108,0.12); color: var(--green); }
+.fi-badge.yellow { background: rgba(247,201,79,0.12); color: var(--yellow); }
+.fi-badge.orange { background: rgba(247,144,79,0.12); color: var(--orange); }
+.fi-badge.purple { background: rgba(123,90,247,0.12); color: var(--accent2); }
+.phys-var { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 70px; }
+.phys-var-label { font-size: 10px; color: var(--text3); font-family: 'Space Mono', monospace; }
+.phys-var input { width: 100%; padding: 5px 8px; background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 12px; font-family: 'Space Mono', monospace; outline: none; transition: all var(--transition); }
+.phys-var input:focus { border-color: var(--accent); }
+.phys-result-box { padding: 9px 12px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; font-family: 'Space Mono', monospace; font-size: 13px; color: var(--green); margin-top: 8px; min-height: 36px; }
+.phys-section-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text3); font-family: 'Space Mono', monospace; margin: 12px 0 6px; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+.calc-scroll-area { max-height: 500px; overflow-y: auto; padding-right: 4px; }
+.calc-scroll-area::-webkit-scrollbar { width: 3px; }
+.calc-scroll-area::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+.phys-solver { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; }
+.phys-solver-title { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.phys-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
 </style>
 </head>
 <body>
@@ -727,122 +764,300 @@ svg.flow-arrows { position: absolute; top: 0; left: 0; width: 100%; height: 100%
       </div>
       <!-- CALCULATOR -->
       <div class="page" id="page-calculator">
-        <div class="grid2" style="gap:20px;align-items:start">
-          <!-- Standard + Math Calculator -->
-          <div>
-            <div class="section-title" style="margin-bottom:14px">CALCULATOR</div>
-            <div class="card" style="padding:0;overflow:hidden">
-              <!-- Display -->
-              <div style="padding:16px 18px 10px;background:var(--bg3);border-bottom:1px solid var(--border)">
-                <div id="calc-expr" style="font-size:11px;color:var(--text3);font-family:'Space Mono',monospace;min-height:16px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
-                <div id="calc-display" style="font-size:32px;font-weight:700;font-family:'Space Mono',monospace;color:var(--text);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:1px">0</div>
-              </div>
-              <!-- Buttons -->
-              <div style="padding:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
-                <!-- Row 1 -->
-                <button class="calc-btn fn" onclick="calcFn('clear')">AC</button>
-                <button class="calc-btn fn" onclick="calcFn('sign')">+/−</button>
-                <button class="calc-btn fn" onclick="calcFn('percent')">%</button>
-                <button class="calc-btn op" onclick="calcOp('/')">÷</button>
-                <!-- Row 2 -->
-                <button class="calc-btn" onclick="calcNum('7')">7</button>
-                <button class="calc-btn" onclick="calcNum('8')">8</button>
-                <button class="calc-btn" onclick="calcNum('9')">9</button>
-                <button class="calc-btn op" onclick="calcOp('*')">×</button>
-                <!-- Row 3 -->
-                <button class="calc-btn" onclick="calcNum('4')">4</button>
-                <button class="calc-btn" onclick="calcNum('5')">5</button>
-                <button class="calc-btn" onclick="calcNum('6')">6</button>
-                <button class="calc-btn op" onclick="calcOp('-')">−</button>
-                <!-- Row 4 -->
-                <button class="calc-btn" onclick="calcNum('1')">1</button>
-                <button class="calc-btn" onclick="calcNum('2')">2</button>
-                <button class="calc-btn" onclick="calcNum('3')">3</button>
-                <button class="calc-btn op" onclick="calcOp('+')">+</button>
-                <!-- Row 5 -->
-                <button class="calc-btn" onclick="calcNum('0')" style="grid-column:span 2">0</button>
-                <button class="calc-btn" onclick="calcDot()">.</button>
-                <button class="calc-btn eq" onclick="calcEquals()">=</button>
+        <!-- Top Tabs -->
+        <div class="calc-tabs">
+          <button class="calc-tab active" onclick="switchCalcTab('standard',this)">STANDARD</button>
+          <button class="calc-tab" onclick="switchCalcTab('math',this)">MATH FN</button>
+          <button class="calc-tab" onclick="switchCalcTab('calculus',this)">∫ CALCULUS</button>
+          <button class="calc-tab" onclick="switchCalcTab('physics',this)">⚛ PHYSICS</button>
+        </div>
+
+        <!-- STANDARD TAB -->
+        <div class="calc-tab-panel active" id="calctab-standard">
+          <div class="grid2" style="gap:20px;align-items:start">
+            <div>
+              <div class="card" style="padding:0;overflow:hidden">
+                <div style="padding:16px 18px 10px;background:var(--bg3);border-bottom:1px solid var(--border)">
+                  <div id="calc-expr" style="font-size:11px;color:var(--text3);font-family:'Space Mono',monospace;min-height:16px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+                  <div id="calc-display" style="font-size:32px;font-weight:700;font-family:'Space Mono',monospace;color:var(--text);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:1px">0</div>
+                </div>
+                <div style="padding:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+                  <button class="calc-btn fn" onclick="calcFn('clear')">AC</button>
+                  <button class="calc-btn fn" onclick="calcFn('sign')">+/−</button>
+                  <button class="calc-btn fn" onclick="calcFn('percent')">%</button>
+                  <button class="calc-btn op" onclick="calcOp('/')">÷</button>
+                  <button class="calc-btn" onclick="calcNum('7')">7</button>
+                  <button class="calc-btn" onclick="calcNum('8')">8</button>
+                  <button class="calc-btn" onclick="calcNum('9')">9</button>
+                  <button class="calc-btn op" onclick="calcOp('*')">×</button>
+                  <button class="calc-btn" onclick="calcNum('4')">4</button>
+                  <button class="calc-btn" onclick="calcNum('5')">5</button>
+                  <button class="calc-btn" onclick="calcNum('6')">6</button>
+                  <button class="calc-btn op" onclick="calcOp('-')">−</button>
+                  <button class="calc-btn" onclick="calcNum('1')">1</button>
+                  <button class="calc-btn" onclick="calcNum('2')">2</button>
+                  <button class="calc-btn" onclick="calcNum('3')">3</button>
+                  <button class="calc-btn op" onclick="calcOp('+')">+</button>
+                  <button class="calc-btn" onclick="calcNum('0')" style="grid-column:span 2">0</button>
+                  <button class="calc-btn" onclick="calcDot()">.</button>
+                  <button class="calc-btn eq" onclick="calcEquals()">=</button>
+                </div>
               </div>
             </div>
-            <!-- History -->
-            <div class="card" style="margin-top:14px">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-                <div class="card-title" style="margin-bottom:0"><span class="dot" style="background:var(--text3)"></span>ประวัติ</div>
-                <button onclick="clearCalcHistory()" style="background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer">ล้าง</button>
-              </div>
-              <div id="calc-history" style="display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto">
-                <div style="color:var(--text3);font-size:12px;text-align:center;padding:20px 0">ยังไม่มีประวัติ</div>
+            <div>
+              <div class="card" style="margin-bottom:14px">
+                <div class="card-title"><span class="dot" style="background:var(--text3)"></span>ประวัติ</div>
+                <div style="display:flex;justify-content:flex-end;margin-bottom:6px">
+                  <button onclick="clearCalcHistory()" style="background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer">ล้าง</button>
+                </div>
+                <div id="calc-history" style="display:flex;flex-direction:column;gap:4px;max-height:300px;overflow-y:auto">
+                  <div style="color:var(--text3);font-size:12px;text-align:center;padding:20px 0">ยังไม่มีประวัติ</div>
+                </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Math Functions -->
-          <div>
-            <div class="section-title" style="margin-bottom:14px">MATH FUNCTIONS</div>
-            <!-- Scientific -->
-            <div class="card" style="margin-bottom:14px">
-              <div class="card-title"><span class="dot" style="background:var(--accent)"></span>Scientific</div>
-              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
-                <button class="calc-btn fn" onclick="calcSci('sqrt')">√x</button>
-                <button class="calc-btn fn" onclick="calcSci('sq')">x²</button>
-                <button class="calc-btn fn" onclick="calcSci('cube')">x³</button>
-                <button class="calc-btn fn" onclick="calcSci('inv')">1/x</button>
-                <button class="calc-btn fn" onclick="calcSci('abs')">|x|</button>
-                <button class="calc-btn fn" onclick="calcSci('factorial')">n!</button>
-                <button class="calc-btn fn" onclick="calcSci('log')">log</button>
-                <button class="calc-btn fn" onclick="calcSci('ln')">ln</button>
-                <button class="calc-btn fn" onclick="calcSci('exp')">eˣ</button>
-                <button class="calc-btn fn" onclick="calcSci('sin')">sin</button>
-                <button class="calc-btn fn" onclick="calcSci('cos')">cos</button>
-                <button class="calc-btn fn" onclick="calcSci('tan')">tan</button>
-                <button class="calc-btn fn" onclick="calcSci('asin')">sin⁻¹</button>
-                <button class="calc-btn fn" onclick="calcSci('acos')">cos⁻¹</button>
-                <button class="calc-btn fn" onclick="calcSci('atan')">tan⁻¹</button>
-                <button class="calc-btn fn" onclick="insertConst('pi')">π</button>
-                <button class="calc-btn fn" onclick="insertConst('e')">e</button>
-                <button class="calc-btn fn" onclick="calcFn('backspace')">⌫</button>
-              </div>
-              <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
-                <span style="font-size:11px;color:var(--text3)">โหมด:</span>
-                <button id="deg-btn" class="calc-btn fn" onclick="setDegMode('deg')" style="flex:1;font-size:11px">DEG</button>
-                <button id="rad-btn" class="calc-btn" onclick="setDegMode('rad')" style="flex:1;font-size:11px">RAD</button>
-              </div>
-            </div>
-
-            <!-- Expression evaluator -->
-            <div class="card" style="margin-bottom:14px">
-              <div class="card-title"><span class="dot" style="background:var(--yellow)"></span>พิมพ์สูตรคณิตศาสตร์</div>
-              <div style="font-size:11px;color:var(--text3);margin-bottom:8px">พิมพ์สูตรได้เลย เช่น: <span style="color:var(--accent);font-family:'Space Mono',monospace">2^10</span>, <span style="color:var(--accent);font-family:'Space Mono',monospace">sqrt(144)</span>, <span style="color:var(--accent);font-family:'Space Mono',monospace">(3+4)*sin(30)</span></div>
-              <div style="display:flex;gap:8px">
-                <input type="text" id="expr-input" class="form-input" placeholder="พิมพ์สูตร..." onkeydown="if(event.key==='Enter')evalExpr()" style="font-family:'Space Mono',monospace;font-size:13px">
-                <button class="btn btn-primary" onclick="evalExpr()" style="white-space:nowrap">=</button>
-              </div>
-              <div id="expr-result" style="margin-top:10px;padding:10px;background:var(--bg3);border-radius:8px;font-family:'Space Mono',monospace;font-size:15px;color:var(--green);display:none"></div>
-              <div id="expr-error" style="margin-top:8px;font-size:12px;color:var(--red);display:none"></div>
-            </div>
-
-            <!-- Unit Converter -->
-            <div class="card">
-              <div class="card-title"><span class="dot" style="background:var(--orange)"></span>แปลงหน่วย</div>
-              <div style="display:flex;gap:8px;margin-bottom:10px">
-                <select id="unit-type" class="form-select" onchange="updateUnitOptions()" style="flex:1">
-                  <option value="length">ความยาว</option>
-                  <option value="weight">น้ำหนัก</option>
-                  <option value="temp">อุณหภูมิ</option>
-                  <option value="area">พื้นที่</option>
-                  <option value="speed">ความเร็ว</option>
-                </select>
-              </div>
-              <div style="display:flex;gap:8px;align-items:center">
-                <div style="flex:1">
-                  <input type="number" id="unit-val" class="form-input" placeholder="ค่า..." oninput="convertUnit()">
-                  <select id="unit-from" class="form-select" style="margin-top:6px" onchange="convertUnit()"></select>
+        <!-- MATH FN TAB -->
+        <div class="calc-tab-panel" id="calctab-math">
+          <div class="grid2" style="gap:20px;align-items:start">
+            <div>
+              <div class="card" style="margin-bottom:14px">
+                <div class="card-title"><span class="dot" style="background:var(--accent)"></span>Scientific Functions</div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+                  <button class="calc-btn fn" onclick="calcSci('sqrt')">√x</button>
+                  <button class="calc-btn fn" onclick="calcSci('sq')">x²</button>
+                  <button class="calc-btn fn" onclick="calcSci('cube')">x³</button>
+                  <button class="calc-btn fn" onclick="calcSci('inv')">1/x</button>
+                  <button class="calc-btn fn" onclick="calcSci('abs')">|x|</button>
+                  <button class="calc-btn fn" onclick="calcSci('factorial')">n!</button>
+                  <button class="calc-btn fn" onclick="calcSci('log')">log</button>
+                  <button class="calc-btn fn" onclick="calcSci('ln')">ln</button>
+                  <button class="calc-btn fn" onclick="calcSci('exp')">eˣ</button>
+                  <button class="calc-btn fn" onclick="calcSci('sin')">sin</button>
+                  <button class="calc-btn fn" onclick="calcSci('cos')">cos</button>
+                  <button class="calc-btn fn" onclick="calcSci('tan')">tan</button>
+                  <button class="calc-btn fn" onclick="calcSci('asin')">sin⁻¹</button>
+                  <button class="calc-btn fn" onclick="calcSci('acos')">cos⁻¹</button>
+                  <button class="calc-btn fn" onclick="calcSci('atan')">tan⁻¹</button>
+                  <button class="calc-btn fn" onclick="insertConst('pi')">π</button>
+                  <button class="calc-btn fn" onclick="insertConst('e')">e</button>
+                  <button class="calc-btn fn" onclick="calcFn('backspace')">⌫</button>
                 </div>
-                <div style="font-size:20px;color:var(--text3)">→</div>
-                <div style="flex:1">
-                  <div id="unit-result" style="padding:8px 11px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;font-family:'Space Mono',monospace;font-size:15px;color:var(--green);min-height:38px;display:flex;align-items:center">–</div>
-                  <select id="unit-to" class="form-select" style="margin-top:6px" onchange="convertUnit()"></select>
+                <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
+                  <span style="font-size:11px;color:var(--text3)">โหมด:</span>
+                  <button id="deg-btn" class="calc-btn fn op" onclick="setDegMode('deg')" style="flex:1;font-size:11px">DEG</button>
+                  <button id="rad-btn" class="calc-btn fn" onclick="setDegMode('rad')" style="flex:1;font-size:11px">RAD</button>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="card" style="margin-bottom:14px">
+                <div class="card-title"><span class="dot" style="background:var(--yellow)"></span>พิมพ์สูตรคณิตศาสตร์</div>
+                <div style="font-size:11px;color:var(--text3);margin-bottom:8px">พิมพ์สูตรได้เลย เช่น: <span style="color:var(--accent);font-family:'Space Mono',monospace">2^10</span>, <span style="color:var(--accent);font-family:'Space Mono',monospace">sqrt(144)</span>, <span style="color:var(--accent);font-family:'Space Mono',monospace">(3+4)*sin(30)</span></div>
+                <div style="display:flex;gap:8px">
+                  <input type="text" id="expr-input" class="form-input" placeholder="พิมพ์สูตร..." onkeydown="if(event.key==='Enter')evalExpr()" style="font-family:'Space Mono',monospace;font-size:13px">
+                  <button class="btn btn-primary" onclick="evalExpr()" style="white-space:nowrap">=</button>
+                </div>
+                <div id="expr-result" style="margin-top:10px;padding:10px;background:var(--bg3);border-radius:8px;font-family:'Space Mono',monospace;font-size:15px;color:var(--green);display:none"></div>
+                <div id="expr-error" style="margin-top:8px;font-size:12px;color:var(--red);display:none"></div>
+              </div>
+              <div class="card">
+                <div class="card-title"><span class="dot" style="background:var(--orange)"></span>แปลงหน่วย</div>
+                <div style="display:flex;gap:8px;margin-bottom:10px">
+                  <select id="unit-type" class="form-select" onchange="updateUnitOptions()" style="flex:1">
+                    <option value="length">ความยาว</option>
+                    <option value="weight">น้ำหนัก</option>
+                    <option value="temp">อุณหภูมิ</option>
+                    <option value="area">พื้นที่</option>
+                    <option value="speed">ความเร็ว</option>
+                  </select>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <div style="flex:1">
+                    <input type="number" id="unit-val" class="form-input" placeholder="ค่า..." oninput="convertUnit()">
+                    <select id="unit-from" class="form-select" style="margin-top:6px" onchange="convertUnit()"></select>
+                  </div>
+                  <div style="font-size:20px;color:var(--text3)">→</div>
+                  <div style="flex:1">
+                    <div id="unit-result" style="padding:8px 11px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;font-family:'Space Mono',monospace;font-size:15px;color:var(--green);min-height:38px;display:flex;align-items:center">–</div>
+                    <select id="unit-to" class="form-select" style="margin-top:6px" onchange="convertUnit()"></select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CALCULUS TAB -->
+        <div class="calc-tab-panel" id="calctab-calculus">
+          <div class="grid2" style="gap:20px;align-items:start">
+            <div>
+              <!-- Numerical Differentiation -->
+              <div class="phys-solver">
+                <div class="phys-solver-title">🔢 อนุพันธ์เชิงตัวเลข (Numerical Derivative)</div>
+                <div style="font-size:11px;color:var(--text3);margin-bottom:10px">คำนวณ f'(x) ≈ [f(x+h) - f(x-h)] / 2h</div>
+                <div class="form-group">
+                  <label class="form-label">f(x) = </label>
+                  <input type="text" id="diff-fx" class="form-input" placeholder="เช่น x^3 + 2*x, sin(x)*x^2" style="font-family:'Space Mono',monospace;font-size:12px">
+                </div>
+                <div class="phys-row">
+                  <div class="phys-var"><div class="phys-var-label">x =</div><input type="number" id="diff-x" placeholder="2" value="2"></div>
+                  <div class="phys-var"><div class="phys-var-label">h (step) =</div><input type="number" id="diff-h" placeholder="0.0001" value="0.0001"></div>
+                </div>
+                <button class="btn btn-primary" style="font-size:12px;margin-top:4px" onclick="calcDerivative()">คำนวณ f'(x)</button>
+                <div id="diff-result" class="phys-result-box" style="display:none"></div>
+              </div>
+
+              <!-- Numerical Integration -->
+              <div class="phys-solver">
+                <div class="phys-solver-title">∫ อินทิกรัลเชิงตัวเลข (Simpson's Rule)</div>
+                <div style="font-size:11px;color:var(--text3);margin-bottom:10px">คำนวณ ∫ f(x) dx จาก a ถึง b (Simpson's 1/3)</div>
+                <div class="form-group">
+                  <label class="form-label">f(x) = </label>
+                  <input type="text" id="int-fx" class="form-input" placeholder="เช่น x^2, sin(x), e^x" style="font-family:'Space Mono',monospace;font-size:12px">
+                </div>
+                <div class="phys-row">
+                  <div class="phys-var"><div class="phys-var-label">a (ล่าง) =</div><input type="number" id="int-a" placeholder="0" value="0"></div>
+                  <div class="phys-var"><div class="phys-var-label">b (บน) =</div><input type="number" id="int-b" placeholder="1" value="1"></div>
+                  <div class="phys-var"><div class="phys-var-label">n (ส่วน) =</div><input type="number" id="int-n" placeholder="1000" value="1000"></div>
+                </div>
+                <button class="btn btn-primary" style="font-size:12px;margin-top:4px" onclick="calcIntegral()">คำนวณ ∫ f(x) dx</button>
+                <div id="int-result" class="phys-result-box" style="display:none"></div>
+              </div>
+
+              <!-- Limit calculator -->
+              <div class="phys-solver">
+                <div class="phys-solver-title">lim ขีดจำกัด (Numerical Limit)</div>
+                <div style="font-size:11px;color:var(--text3);margin-bottom:10px">คำนวณ lim(x→c) f(x) เชิงตัวเลข</div>
+                <div class="form-group">
+                  <label class="form-label">f(x) = </label>
+                  <input type="text" id="lim-fx" class="form-input" placeholder="เช่น (x^2-1)/(x-1), sin(x)/x" style="font-family:'Space Mono',monospace;font-size:12px">
+                </div>
+                <div class="phys-row">
+                  <div class="phys-var"><div class="phys-var-label">x → c =</div><input type="number" id="lim-c" placeholder="1" value="1"></div>
+                </div>
+                <button class="btn btn-primary" style="font-size:12px;margin-top:4px" onclick="calcLimit()">คำนวณ lim</button>
+                <div id="lim-result" class="phys-result-box" style="display:none"></div>
+              </div>
+            </div>
+
+            <div>
+              <!-- Derivative Formulas Reference -->
+              <div class="card" style="margin-bottom:14px">
+                <div class="card-title"><span class="dot" style="background:var(--accent)"></span>สูตรอนุพันธ์ (คลิกเพื่อใช้)</div>
+                <div class="calc-scroll-area">
+                  <div class="phys-section-label">พื้นฐาน</div>
+                  <div class="formula-grid">
+                    <div class="formula-item" onclick="setDiffFx('x^n')"><div class="fi-left"><div class="fi-name">Power Rule</div><div class="fi-expr">d/dx[xⁿ] = n·xⁿ⁻¹</div></div><div class="fi-badge">d/dx</div></div>
+                    <div class="formula-item" onclick="setDiffFx('sin(x)')"><div class="fi-left"><div class="fi-name">Sine</div><div class="fi-expr">d/dx[sin x] = cos x</div></div><div class="fi-badge">trig</div></div>
+                    <div class="formula-item" onclick="setDiffFx('cos(x)')"><div class="fi-left"><div class="fi-name">Cosine</div><div class="fi-expr">d/dx[cos x] = -sin x</div></div><div class="fi-badge">trig</div></div>
+                    <div class="formula-item" onclick="setDiffFx('Math.exp(x)')"><div class="fi-left"><div class="fi-name">Exponential</div><div class="fi-expr">d/dx[eˣ] = eˣ</div></div><div class="fi-badge green">exp</div></div>
+                    <div class="formula-item" onclick="setDiffFx('Math.log(x)')"><div class="fi-left"><div class="fi-name">Natural Log</div><div class="fi-expr">d/dx[ln x] = 1/x</div></div><div class="fi-badge yellow">log</div></div>
+                    <div class="formula-item" onclick="setDiffFx('Math.tan(x)')"><div class="fi-left"><div class="fi-name">Tangent</div><div class="fi-expr">d/dx[tan x] = sec² x</div></div><div class="fi-badge">trig</div></div>
+                  </div>
+                  <div class="phys-section-label">Integral Reference</div>
+                  <div class="formula-grid">
+                    <div class="formula-item" onclick="setIntFx('x**n')"><div class="fi-left"><div class="fi-name">Power Rule</div><div class="fi-expr">∫xⁿ dx = xⁿ⁺¹/(n+1) + C</div></div><div class="fi-badge purple">∫</div></div>
+                    <div class="formula-item" onclick="setIntFx('Math.sin(x)')"><div class="fi-left"><div class="fi-name">Sine</div><div class="fi-expr">∫sin x dx = -cos x + C</div></div><div class="fi-badge purple">∫</div></div>
+                    <div class="formula-item" onclick="setIntFx('Math.cos(x)')"><div class="fi-left"><div class="fi-name">Cosine</div><div class="fi-expr">∫cos x dx = sin x + C</div></div><div class="fi-badge purple">∫</div></div>
+                    <div class="formula-item" onclick="setIntFx('Math.exp(x)')"><div class="fi-left"><div class="fi-name">Exponential</div><div class="fi-expr">∫eˣ dx = eˣ + C</div></div><div class="fi-badge green">∫</div></div>
+                    <div class="formula-item" onclick="setIntFx('1/x')"><div class="fi-left"><div class="fi-name">Reciprocal</div><div class="fi-expr">∫(1/x) dx = ln|x| + C</div></div><div class="fi-badge yellow">∫</div></div>
+                    <div class="formula-item" onclick="setIntFx('x**2')"><div class="fi-left"><div class="fi-name">x²</div><div class="fi-expr">∫x² dx = x³/3 + C</div></div><div class="fi-badge purple">∫</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PHYSICS TAB -->
+        <div class="calc-tab-panel" id="calctab-physics">
+          <div class="grid2" style="gap:20px;align-items:start">
+            <div>
+              <!-- Kinematics -->
+              <div class="phys-solver">
+                <div class="phys-solver-title">🚀 จลนศาสตร์ (Kinematics)</div>
+                <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+                  <button class="calc-btn fn" onclick="setKinMode('vfinal')" id="kin-btn-vfinal" style="font-size:10px;flex:1">หา v</button>
+                  <button class="calc-btn fn" onclick="setKinMode('dist')" id="kin-btn-dist" style="font-size:10px;flex:1">หา s</button>
+                  <button class="calc-btn fn" onclick="setKinMode('accel')" id="kin-btn-accel" style="font-size:10px;flex:1">หา a</button>
+                  <button class="calc-btn fn" onclick="setKinMode('time')" id="kin-btn-time" style="font-size:10px;flex:1">หา t</button>
+                </div>
+                <div id="kin-inputs"></div>
+                <button class="btn btn-primary" style="font-size:12px;margin-top:6px" onclick="calcKinematics()">คำนวณ</button>
+                <div id="kin-result" class="phys-result-box" style="display:none"></div>
+              </div>
+
+              <!-- Newton's Law / Force -->
+              <div class="phys-solver">
+                <div class="phys-solver-title">⚡ กฎนิวตัน — แรง (F = ma)</div>
+                <div style="display:flex;gap:6px;margin-bottom:8px">
+                  <button class="calc-btn fn" onclick="setForceMode('F')" id="force-btn-F" style="font-size:10px;flex:1">หา F</button>
+                  <button class="calc-btn fn" onclick="setForceMode('m')" id="force-btn-m" style="font-size:10px;flex:1">หา m</button>
+                  <button class="calc-btn fn" onclick="setForceMode('a')" id="force-btn-a" style="font-size:10px;flex:1">หา a</button>
+                </div>
+                <div id="force-inputs"></div>
+                <button class="btn btn-primary" style="font-size:12px;margin-top:6px" onclick="calcForce()">คำนวณ</button>
+                <div id="force-result" class="phys-result-box" style="display:none"></div>
+              </div>
+
+              <!-- Energy & Work -->
+              <div class="phys-solver">
+                <div class="phys-solver-title">🔋 พลังงาน & งาน</div>
+                <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+                  <button class="calc-btn fn" onclick="setEnergyMode('KE')" id="en-btn-KE" style="font-size:10px;flex:1">KE</button>
+                  <button class="calc-btn fn" onclick="setEnergyMode('PE')" id="en-btn-PE" style="font-size:10px;flex:1">PE</button>
+                  <button class="calc-btn fn" onclick="setEnergyMode('W')" id="en-btn-W" style="font-size:10px;flex:1">Work</button>
+                  <button class="calc-btn fn" onclick="setEnergyMode('P')" id="en-btn-P" style="font-size:10px;flex:1">Power</button>
+                </div>
+                <div id="energy-inputs"></div>
+                <button class="btn btn-primary" style="font-size:12px;margin-top:6px" onclick="calcEnergy()">คำนวณ</button>
+                <div id="energy-result" class="phys-result-box" style="display:none"></div>
+              </div>
+            </div>
+
+            <div>
+              <!-- Wave & Electricity -->
+              <div class="phys-solver">
+                <div class="phys-solver-title">🌊 คลื่น & เสียง</div>
+                <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+                  <button class="calc-btn fn" onclick="setWaveMode('v')" id="wave-btn-v" style="font-size:10px;flex:1">หา v</button>
+                  <button class="calc-btn fn" onclick="setWaveMode('f')" id="wave-btn-f" style="font-size:10px;flex:1">หา f</button>
+                  <button class="calc-btn fn" onclick="setWaveMode('lam')" id="wave-btn-lam" style="font-size:10px;flex:1">หา λ</button>
+                </div>
+                <div id="wave-inputs"></div>
+                <button class="btn btn-primary" style="font-size:12px;margin-top:6px" onclick="calcWave()">คำนวณ</button>
+                <div id="wave-result" class="phys-result-box" style="display:none"></div>
+              </div>
+
+              <!-- Ohm's Law -->
+              <div class="phys-solver">
+                <div class="phys-solver-title">⚡ กฎของโอห์ม (V = IR)</div>
+                <div style="display:flex;gap:6px;margin-bottom:8px">
+                  <button class="calc-btn fn" onclick="setOhmMode('V')" id="ohm-btn-V" style="font-size:10px;flex:1">หา V</button>
+                  <button class="calc-btn fn" onclick="setOhmMode('I')" id="ohm-btn-I" style="font-size:10px;flex:1">หา I</button>
+                  <button class="calc-btn fn" onclick="setOhmMode('R')" id="ohm-btn-R" style="font-size:10px;flex:1">หา R</button>
+                </div>
+                <div id="ohm-inputs"></div>
+                <button class="btn btn-primary" style="font-size:12px;margin-top:6px" onclick="calcOhm()">คำนวณ</button>
+                <div id="ohm-result" class="phys-result-box" style="display:none"></div>
+              </div>
+
+              <!-- Constants Reference -->
+              <div class="card">
+                <div class="card-title"><span class="dot" style="background:var(--cyan)"></span>ค่าคงที่ฟิสิกส์</div>
+                <div class="calc-scroll-area" style="max-height:260px">
+                  <div class="formula-grid">
+                    <div class="formula-item" onclick="insertPhysConst(9.80665)"><div class="fi-left"><div class="fi-name">ความเร่งโน้มถ่วง</div><div class="fi-expr">g = 9.80665 m/s²</div></div><div class="fi-badge orange">Earth</div></div>
+                    <div class="formula-item" onclick="insertPhysConst(299792458)"><div class="fi-left"><div class="fi-name">ความเร็วแสง</div><div class="fi-expr">c = 2.998×10⁸ m/s</div></div><div class="fi-badge">light</div></div>
+                    <div class="formula-item" onclick="insertPhysConst(6.674e-11)"><div class="fi-left"><div class="fi-name">ค่าคงที่โน้มถ่วง</div><div class="fi-expr">G = 6.674×10⁻¹¹</div></div><div class="fi-badge green">gravity</div></div>
+                    <div class="formula-item" onclick="insertPhysConst(6.626e-34)"><div class="fi-left"><div class="fi-name">ค่าคงที่พลังค์</div><div class="fi-expr">h = 6.626×10⁻³⁴ J·s</div></div><div class="fi-badge purple">QM</div></div>
+                    <div class="formula-item" onclick="insertPhysConst(1.602e-19)"><div class="fi-left"><div class="fi-name">ประจุอิเล็กตรอน</div><div class="fi-expr">e = 1.602×10⁻¹⁹ C</div></div><div class="fi-badge yellow">charge</div></div>
+                    <div class="formula-item" onclick="insertPhysConst(8.314)"><div class="fi-left"><div class="fi-name">ค่าคงที่แก๊ส</div><div class="fi-expr">R = 8.314 J/mol·K</div></div><div class="fi-badge green">thermo</div></div>
+                    <div class="formula-item" onclick="insertPhysConst(1.38e-23)"><div class="fi-left"><div class="fi-name">ค่าคงที่โบลต์ซมันน์</div><div class="fi-expr">k = 1.38×10⁻²³ J/K</div></div><div class="fi-badge purple">stat</div></div>
+                    <div class="formula-item" onclick="insertPhysConst(6.022e23)"><div class="fi-left"><div class="fi-name">เลขอาโวกาโดร</div><div class="fi-expr">Nₐ = 6.022×10²³</div></div><div class="fi-badge">chem</div></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1730,7 +1945,7 @@ let calcCurrent = '0', calcPrev = '', calcOperator = null, calcNewNum = false, c
 function toRad(d) { return degMode === 'deg' ? d * Math.PI / 180 : d; }
 function toDeg(r) { return degMode === 'deg' ? r * 180 / Math.PI : r; }
 
-function initCalculator() {
+function _calcBaseInit() {
   updateUnitOptions();
   renderCalcHistory();
   setDegMode('deg');
@@ -1938,6 +2153,301 @@ function convertUnit() {
     result = base / (TO_BASE[to] || 1);
   }
   resEl.textContent = parseFloat(result.toPrecision(8)).toLocaleString('en', { maximumFractionDigits: 8 });
+}
+
+// ──────────────────────────────────────────
+// CALC TABS
+// ──────────────────────────────────────────
+function switchCalcTab(tab, el) {
+  document.querySelectorAll('.calc-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.calc-tab-panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('calctab-' + tab).classList.add('active');
+}
+
+function initCalculator() {
+  calcDisplay();
+  renderCalcHistory();
+  updateUnitOptions();
+  setDegMode('deg');
+  // init physics solvers
+  setKinMode('vfinal');
+  setForceMode('F');
+  setEnergyMode('KE');
+  setWaveMode('v');
+  setOhmMode('V');
+}
+
+// ──────────────────────────────────────────
+// CALCULUS
+// ──────────────────────────────────────────
+function evalMathExpr(expr, x) {
+  let e = expr
+    .replace(/\^/g, '**')
+    .replace(/sqrt\(/g, 'Math.sqrt(')
+    .replace(/cbrt\(/g, 'Math.cbrt(')
+    .replace(/abs\(/g, 'Math.abs(')
+    .replace(/log\(/g, 'Math.log10(')
+    .replace(/ln\(/g, 'Math.log(')
+    .replace(/sin\(/g, 'Math.sin(')
+    .replace(/cos\(/g, 'Math.cos(')
+    .replace(/tan\(/g, 'Math.tan(')
+    .replace(/exp\(/g, 'Math.exp(')
+    .replace(/\bpi\b/g, 'Math.PI')
+    .replace(/\be\b(?!\w)/g, 'Math.E');
+  // eslint-disable-next-line no-new-func
+  return Function('"use strict"; const x = ' + x + '; return (' + e + ')')();
+}
+
+function calcDerivative() {
+  const fxStr = document.getElementById('diff-fx').value.trim();
+  const x = parseFloat(document.getElementById('diff-x').value);
+  const h = parseFloat(document.getElementById('diff-h').value) || 1e-4;
+  const resEl = document.getElementById('diff-result');
+  if (!fxStr) { alert('กรุณาใส่ f(x)'); return; }
+  try {
+    const fxph = evalMathExpr(fxStr, x + h);
+    const fxmh = evalMathExpr(fxStr, x - h);
+    const deriv = (fxph - fxmh) / (2 * h);
+    const r = parseFloat(deriv.toPrecision(10));
+    resEl.innerHTML = `f'(${x}) ≈ <b>${r}</b>`;
+    resEl.style.display = 'block';
+    addCalcHistory(`d/dx[${fxStr}] at x=${x}`, String(r));
+  } catch(e) {
+    resEl.innerHTML = '<span style="color:var(--red)">⚠ สูตรไม่ถูกต้อง</span>';
+    resEl.style.display = 'block';
+  }
+}
+
+function calcIntegral() {
+  const fxStr = document.getElementById('int-fx').value.trim();
+  const a = parseFloat(document.getElementById('int-a').value);
+  const b = parseFloat(document.getElementById('int-b').value);
+  let n = parseInt(document.getElementById('int-n').value) || 1000;
+  if (n % 2 !== 0) n++;
+  const resEl = document.getElementById('int-result');
+  if (!fxStr) { alert('กรุณาใส่ f(x)'); return; }
+  try {
+    const h = (b - a) / n;
+    let sum = evalMathExpr(fxStr, a) + evalMathExpr(fxStr, b);
+    for (let i = 1; i < n; i++) {
+      const xi = a + i * h;
+      sum += (i % 2 === 0 ? 2 : 4) * evalMathExpr(fxStr, xi);
+    }
+    const result = (h / 3) * sum;
+    const r = parseFloat(result.toPrecision(10));
+    resEl.innerHTML = `∫(${a} to ${b}) ${fxStr} dx ≈ <b>${r}</b>`;
+    resEl.style.display = 'block';
+    addCalcHistory(`∫[${a},${b}] ${fxStr} dx`, String(r));
+  } catch(e) {
+    resEl.innerHTML = '<span style="color:var(--red)">⚠ สูตรไม่ถูกต้อง</span>';
+    resEl.style.display = 'block';
+  }
+}
+
+function calcLimit() {
+  const fxStr = document.getElementById('lim-fx').value.trim();
+  const c = parseFloat(document.getElementById('lim-c').value);
+  const resEl = document.getElementById('lim-result');
+  if (!fxStr) { alert('กรุณาใส่ f(x)'); return; }
+  try {
+    const eps = [1e-6, 1e-7, 1e-8];
+    const vals = eps.map(e => {
+      const l = evalMathExpr(fxStr, c + e);
+      const r = evalMathExpr(fxStr, c - e);
+      return (l + r) / 2;
+    });
+    const result = vals[vals.length - 1];
+    if (!isFinite(result)) throw new Error('diverges');
+    const r = parseFloat(result.toPrecision(10));
+    resEl.innerHTML = `lim(x→${c}) ${fxStr} ≈ <b>${r}</b>`;
+    resEl.style.display = 'block';
+    addCalcHistory(`lim(x→${c}) ${fxStr}`, String(r));
+  } catch(e) {
+    resEl.innerHTML = '<span style="color:var(--red)">⚠ ขีดจำกัดไม่มีค่า (diverges)</span>';
+    resEl.style.display = 'block';
+  }
+}
+
+function setDiffFx(expr) {
+  document.getElementById('diff-fx').value = expr;
+  switchCalcTab('calculus', document.querySelectorAll('.calc-tab')[2]);
+}
+function setIntFx(expr) {
+  document.getElementById('int-fx').value = expr;
+  switchCalcTab('calculus', document.querySelectorAll('.calc-tab')[2]);
+}
+
+// ──────────────────────────────────────────
+// PHYSICS
+// ──────────────────────────────────────────
+
+// --- Kinematics ---
+let kinMode = 'vfinal';
+function setKinMode(mode) {
+  kinMode = mode;
+  ['vfinal','dist','accel','time'].forEach(m => {
+    const btn = document.getElementById('kin-btn-' + m);
+    if (btn) btn.className = 'calc-btn ' + (m === mode ? 'fn op' : 'fn');
+  });
+  const el = document.getElementById('kin-inputs');
+  const fields = {
+    vfinal: [['u','u (ความเร็วต้น, m/s)','0'],['a','a (ความเร่ง, m/s²)','9.8'],['t','t (เวลา, s)','5']],
+    dist:   [['u','u (m/s)','0'],['a','a (m/s²)','9.8'],['t','t (s)','5']],
+    accel:  [['u','u (m/s)','0'],['v','v (ความเร็วปลาย, m/s)','49'],['t','t (s)','5']],
+    time:   [['u','u (m/s)','0'],['v','v (m/s)','49'],['a','a (m/s²)','9.8']],
+  };
+  el.innerHTML = '<div class="phys-row">' + (fields[mode]||[]).map(([id,lbl,ph]) =>
+    `<div class="phys-var"><div class="phys-var-label">${lbl}</div><input type="number" id="kin-${id}" placeholder="${ph}" value="${ph}"></div>`
+  ).join('') + '</div>';
+  document.getElementById('kin-result').style.display = 'none';
+}
+
+function calcKinematics() {
+  const g = (id) => parseFloat(document.getElementById('kin-' + id)?.value);
+  let result, label;
+  if (kinMode === 'vfinal') { const [u,a,t]=[g('u'),g('a'),g('t')]; result=u+a*t; label=`v = u + at = ${result.toFixed(4)} m/s`; }
+  else if (kinMode === 'dist') { const [u,a,t]=[g('u'),g('a'),g('t')]; result=u*t+0.5*a*t*t; label=`s = ut + ½at² = ${result.toFixed(4)} m`; }
+  else if (kinMode === 'accel') { const [u,v,t]=[g('u'),g('v'),g('t')]; result=(v-u)/t; label=`a = (v-u)/t = ${result.toFixed(4)} m/s²`; }
+  else if (kinMode === 'time') { const [u,v,a]=[g('u'),g('v'),g('a')]; result=(v-u)/a; label=`t = (v-u)/a = ${result.toFixed(4)} s`; }
+  const el = document.getElementById('kin-result');
+  el.innerHTML = `<b>${label}</b>`;
+  el.style.display = 'block';
+  addCalcHistory(`Kinematics[${kinMode}]`, String(parseFloat(result.toFixed(6))));
+}
+
+// --- Force ---
+let forceMode = 'F';
+function setForceMode(mode) {
+  forceMode = mode;
+  ['F','m','a'].forEach(m => {
+    const btn = document.getElementById('force-btn-' + m);
+    if (btn) btn.className = 'calc-btn ' + (m === mode ? 'fn op' : 'fn');
+  });
+  const el = document.getElementById('force-inputs');
+  const fields = {
+    F: [['m','m (kg)','10'],['a','a (m/s²)','9.8']],
+    m: [['F','F (N)','98'],['a','a (m/s²)','9.8']],
+    a: [['F','F (N)','98'],['m','m (kg)','10']],
+  };
+  el.innerHTML = '<div class="phys-row">' + (fields[mode]||[]).map(([id,lbl,ph]) =>
+    `<div class="phys-var"><div class="phys-var-label">${lbl}</div><input type="number" id="force-${id}" placeholder="${ph}" value="${ph}"></div>`
+  ).join('') + '</div>';
+  document.getElementById('force-result').style.display = 'none';
+}
+
+function calcForce() {
+  const g = (id) => parseFloat(document.getElementById('force-' + id)?.value);
+  let result, label;
+  if (forceMode === 'F') { const [m,a]=[g('m'),g('a')]; result=m*a; label=`F = ma = ${result.toFixed(4)} N`; }
+  else if (forceMode === 'm') { const [F,a]=[g('F'),g('a')]; result=F/a; label=`m = F/a = ${result.toFixed(4)} kg`; }
+  else if (forceMode === 'a') { const [F,m]=[g('F'),g('m')]; result=F/m; label=`a = F/m = ${result.toFixed(4)} m/s²`; }
+  const el = document.getElementById('force-result');
+  el.innerHTML = `<b>${label}</b>`;
+  el.style.display = 'block';
+}
+
+// --- Energy ---
+let energyMode = 'KE';
+function setEnergyMode(mode) {
+  energyMode = mode;
+  ['KE','PE','W','P'].forEach(m => {
+    const btn = document.getElementById('en-btn-' + m);
+    if (btn) btn.className = 'calc-btn ' + (m === mode ? 'fn op' : 'fn');
+  });
+  const el = document.getElementById('energy-inputs');
+  const fields = {
+    KE: [['m','m (kg)','10'],['v','v (m/s)','10']],
+    PE: [['m','m (kg)','10'],['h','h (m)','5']],
+    W:  [['F','F (N)','100'],['d','d (m)','10'],['cos','cos θ','1']],
+    P:  [['W','W (J)','1000'],['t','t (s)','10']],
+  };
+  el.innerHTML = '<div class="phys-row">' + (fields[mode]||[]).map(([id,lbl,ph]) =>
+    `<div class="phys-var"><div class="phys-var-label">${lbl}</div><input type="number" id="en-${id}" placeholder="${ph}" value="${ph}"></div>`
+  ).join('') + '</div>';
+  document.getElementById('energy-result').style.display = 'none';
+}
+
+function calcEnergy() {
+  const g = (id) => parseFloat(document.getElementById('en-' + id)?.value);
+  let result, label;
+  if (energyMode === 'KE') { const [m,v]=[g('m'),g('v')]; result=0.5*m*v*v; label=`KE = ½mv² = ${result.toFixed(4)} J`; }
+  else if (energyMode === 'PE') { const [m,h]=[g('m'),g('h')]; result=m*9.80665*h; label=`PE = mgh = ${result.toFixed(4)} J`; }
+  else if (energyMode === 'W') { const [F,d,c]=[g('F'),g('d'),g('cos')]; result=F*d*c; label=`W = Fd·cosθ = ${result.toFixed(4)} J`; }
+  else if (energyMode === 'P') { const [W,t]=[g('W'),g('t')]; result=W/t; label=`P = W/t = ${result.toFixed(4)} W`; }
+  const el = document.getElementById('energy-result');
+  el.innerHTML = `<b>${label}</b>`;
+  el.style.display = 'block';
+}
+
+// --- Wave ---
+let waveMode = 'v';
+function setWaveMode(mode) {
+  waveMode = mode;
+  ['v','f','lam'].forEach(m => {
+    const btn = document.getElementById('wave-btn-' + m);
+    if (btn) btn.className = 'calc-btn ' + (m === mode ? 'fn op' : 'fn');
+  });
+  const el = document.getElementById('wave-inputs');
+  const fields = {
+    v:   [['f','f (Hz)','440'],['lam','λ (m)','0.773']],
+    f:   [['v','v (m/s)','340'],['lam','λ (m)','0.773']],
+    lam: [['v','v (m/s)','340'],['f','f (Hz)','440']],
+  };
+  el.innerHTML = '<div class="phys-row">' + (fields[mode]||[]).map(([id,lbl,ph]) =>
+    `<div class="phys-var"><div class="phys-var-label">${lbl}</div><input type="number" id="wave-${id}" placeholder="${ph}" value="${ph}"></div>`
+  ).join('') + '</div>';
+  document.getElementById('wave-result').style.display = 'none';
+}
+
+function calcWave() {
+  const g = (id) => parseFloat(document.getElementById('wave-' + id)?.value);
+  let result, label;
+  if (waveMode === 'v') { const [f,lam]=[g('f'),g('lam')]; result=f*lam; label=`v = fλ = ${result.toFixed(4)} m/s`; }
+  else if (waveMode === 'f') { const [v,lam]=[g('v'),g('lam')]; result=v/lam; label=`f = v/λ = ${result.toFixed(4)} Hz`; }
+  else if (waveMode === 'lam') { const [v,f]=[g('v'),g('f')]; result=v/f; label=`λ = v/f = ${result.toFixed(4)} m`; }
+  const el = document.getElementById('wave-result');
+  el.innerHTML = `<b>${label}</b>`;
+  el.style.display = 'block';
+}
+
+// --- Ohm's Law ---
+let ohmMode = 'V';
+function setOhmMode(mode) {
+  ohmMode = mode;
+  ['V','I','R'].forEach(m => {
+    const btn = document.getElementById('ohm-btn-' + m);
+    if (btn) btn.className = 'calc-btn ' + (m === mode ? 'fn op' : 'fn');
+  });
+  const el = document.getElementById('ohm-inputs');
+  const fields = {
+    V: [['I','I (A)','2'],['R','R (Ω)','10']],
+    I: [['V','V (V)','20'],['R','R (Ω)','10']],
+    R: [['V','V (V)','20'],['I','I (A)','2']],
+  };
+  el.innerHTML = '<div class="phys-row">' + (fields[mode]||[]).map(([id,lbl,ph]) =>
+    `<div class="phys-var"><div class="phys-var-label">${lbl}</div><input type="number" id="ohm-${id}" placeholder="${ph}" value="${ph}"></div>`
+  ).join('') + '</div>';
+  document.getElementById('ohm-result').style.display = 'none';
+}
+
+function calcOhm() {
+  const g = (id) => parseFloat(document.getElementById('ohm-' + id)?.value);
+  let result, label;
+  if (ohmMode === 'V') { const [I,R]=[g('I'),g('R')]; result=I*R; label=`V = IR = ${result.toFixed(4)} V`; }
+  else if (ohmMode === 'I') { const [V,R]=[g('V'),g('R')]; result=V/R; label=`I = V/R = ${result.toFixed(4)} A`; }
+  else if (ohmMode === 'R') { const [V,I]=[g('V'),g('I')]; result=V/I; label=`R = V/I = ${result.toFixed(4)} Ω`; }
+  const el = document.getElementById('ohm-result');
+  el.innerHTML = `<b>${label}</b>`;
+  el.style.display = 'block';
+}
+
+function insertPhysConst(val) {
+  calcCurrent = String(val);
+  calcNewNum = false;
+  calcDisplay();
+  // switch to standard tab
+  switchCalcTab('standard', document.querySelectorAll('.calc-tab')[0]);
 }
 
 // ──────────────────────────────────────────
